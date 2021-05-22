@@ -16,7 +16,7 @@ def load_dict(filename_):
     return ret_di
 
 
-def saveasnii(brain_mask,nii_save_path,nii_data):
+def saveasnii(brain_mask, nii_save_path, nii_data):
     img = nib.load(brain_mask)
     nii_img = nib.Nifti1Image(nii_data, img.affine, img.header)
     nib.save(nii_img, nii_save_path)

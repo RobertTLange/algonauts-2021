@@ -62,7 +62,7 @@ class AlexNet(nn.Module):
         out6= self.fc6(out5_reshaped)
         out7= self.fc7(out6)
         out8 = self.fc8(out7)
-        return out1, out2, out3,out4, out5, out6,out7,out8
+        return out1, out2, out3, out4, out5, out6, out7, out8
 
 
 def alexnet(pretrained=False, **kwargs):
@@ -77,3 +77,10 @@ def alexnet(pretrained=False, **kwargs):
         model.load_state_dict(model_zoo.load_url(model_urls['alexnet']))
     return model
 
+
+def load_alexnet():
+    model = alexnet(pretrained=True)
+    if torch.cuda.is_available():
+        model.cuda()
+    model.eval()
+    return model

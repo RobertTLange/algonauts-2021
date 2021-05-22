@@ -1,47 +1,18 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 import os
-import glob
-import random
 import argparse
-import itertools
-import nibabel as nib
-from nilearn import plotting
-from tqdm import tqdm
-from sklearn.cross_decomposition import PLSRegression
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
-from sklearn.preprocessing import StandardScaler
+
 import torch
-import time
-import pickle
-from tqdm import tqdm
-from utils.ols import vectorized_correlation,OLS_pytorch
-from utils.helper import save_dict,load_dict, saveasnii
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+from nilearn import plotting
+from utils.ols import vectorized_correlation, OLS_pytorch
+from utils.helper import save_dict, load_dict, saveasnii
 
 
 def get_activations(activations_dir, layer_name):
-    """This function loads neural network features/activations (preprocessed using PCA) into a
-    numpy array according to a given layer.
-
-    Parameters
-    ----------
-    activations_dir : str
-        Path to PCA processed Neural Network features
-    layer_name : str
-        which layer of the neural network to load,
-
-    Returns
-    -------
-    train_activations : np.array
-        matrix of dimensions #train_vids x #pca_components
-        containing activations of train videos
-    test_activations : np.array
-        matrix of dimensions #test_vids x #pca_components
-        containing activations of test videos
-
-    """
-
+    """ Loads NN features into a np array according to layer. """
     train_file = os.path.join(activations_dir,"train_" + layer_name + ".npy")
     test_file = os.path.join(activations_dir,"test_" + layer_name + ".npy")
     train_activations = np.load(train_file)
@@ -49,7 +20,6 @@ def get_activations(activations_dir, layer_name):
     scaler = StandardScaler()
     train_activations = scaler.fit_transform(train_activations)
     test_activations = scaler.fit_transform(test_activations)
-
     return train_activations, test_activations
 
 def get_fmri(fmri_dir, ROI):
@@ -83,7 +53,9 @@ def get_fmri(fmri_dir, ROI):
 
     return ROI_data_train
 
-def predict_fmri_fast(train_activations, test_activations, train_fmri,use_gpu=False):
+
+def predict_fmri_fast(train_activations, test_activations,
+                      train_fmri, use_gpu=False):
     """This function fits a linear regressor using train_activations and train_fmri,
     then returns the predicted fmri_pred_test using the fitted weights and
     test_activations.
@@ -114,6 +86,7 @@ def predict_fmri_fast(train_activations, test_activations, train_fmri,use_gpu=Fa
     reg.fit(train_activations,train_fmri.T)
     fmri_pred_test = reg.predict(test_activations)
     return fmri_pred_test
+
 
 def main():
 
@@ -149,7 +122,7 @@ def main():
     else:
         track = "mini_track"
 
-    activation_dir = os.path.join(args['activation_dir'],'pca_100')
+    activation_dir = os.path.join(args['activation_dir'], 'pca_100')
     fmri_dir = os.path.join(args['fmri_dir'], track)
 
     sub_fmri_dir = os.path.join(fmri_dir, sub)

@@ -15,10 +15,11 @@
 4. Time/positional encoding feature
 5. Train/Val setup (cross-validation?)
 6. Retrain full encoding networks for submission
-7. Submission ready
+7. Submission ready - multiprocessing pipeline (8 regions x 10 subjects)
 
 ## Experiments to run
 
+- What is the right sampling rate?
 - What layer fits best for which ROI and subject?
 - What model fits best for which ROI and subject?
 - How to combine features of different layers/networks?

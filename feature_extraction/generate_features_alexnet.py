@@ -1,54 +1,22 @@
-###
-# This file will:
-# 1. Generate and save Alexnet features in a given folder
-# 2. preprocess Alexnet features using PCA and save them in another folder
-###
-import glob
-from alexnet import *
-import numpy as np
-import urllib
-import torch
-import cv2
-import argparse
-import time
-import random
-from tqdm import tqdm
-from torchvision import transforms as trn
 import os
+import glob
+import argparse
+from tqdm import tqdm
+
+import numpy as np
+import cv2
 from PIL import Image
-from sklearn.preprocessing import StandardScaler
+
+import torch
 from torch.autograd import Variable as V
+from torchvision import transforms as trn
+from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, IncrementalPCA
 
-seed = 42
-# Torch RNG
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)
-# Python RNG
-np.random.seed(seed)
-random.seed(seed)
+from alexnet import load_alexnet
 
 
 def get_video_from_mp4(file, sampling_rate):
-    """This function takes a mp4 video file as input and returns
-    an array of frames in numpy format.
-
-    Parameters
-    ----------
-    file : str
-        path to mp4 video file
-    sampling_rate : int
-        how many frames to skip when doing frame sampling.
-
-    Returns
-    -------
-    video: np.array
-
-    num_frames: int
-        number of frames extracted
-
-    """
     cap = cv2.VideoCapture(file)
     frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -66,54 +34,9 @@ def get_video_from_mp4(file, sampling_rate):
     return np.expand_dims(buf, axis=0),int(frameCount / sampling_rate)
 
 
-def load_alexnet(model_checkpoints):
-    """This function initializes an Alexnet and load
-    its weights from a pretrained model
-    ----------
-    model_checkpoints : str
-        model checkpoints location.
-
-    Returns
-    -------
-    model
-        pytorch model of alexnet
-
-    """
-
-
-    model = alexnet()
-    model_file = model_checkpoints
-    checkpoint = torch.load(model_file, map_location=lambda storage, loc: storage)
-    model_dict =["conv1.0.weight", "conv1.0.bias", "conv2.0.weight", "conv2.0.bias", "conv3.0.weight", "conv3.0.bias", "conv4.0.weight", "conv4.0.bias", "conv5.0.weight", "conv5.0.bias", "fc6.1.weight", "fc6.1.bias", "fc7.1.weight", "fc7.1.bias", "fc8.1.weight", "fc8.1.bias"]
-    state_dict={}
-    i=0
-    for k,v in checkpoint.items():
-        state_dict[model_dict[i]] =  v
-        i+=1
-
-    model.load_state_dict(state_dict)
-    if torch.cuda.is_available():
-        model.cuda()
-    model.eval()
-    return model
-
-
-def get_activations_and_save(model, video_list, activations_dir, sampling_rate = 4):
-    """This function generates Alexnet features and save them in a specified directory.
-
-    Parameters
-    ----------
-    model :
-        pytorch model : alexnet.
-    video_list : list
-        the list contains path to all videos.
-    activations_dir : str
-        save path for extracted features.
-    sampling_rate : int
-        how many frames to skip when feeding into the network.
-
-    """
-
+def get_activations_and_save(model, video_list, activations_dir,
+                             sampling_rate = 4):
+    """ how many frames to skip when feeding into the network. """
     centre_crop = trn.Compose([
             trn.ToPILImage(),
             trn.Resize((224,224)),
@@ -140,22 +63,9 @@ def get_activations_and_save(model, video_list, activations_dir, sampling_rate =
             np.save(save_path,activations[layer]/float(num_frames))
 
 
-def do_PCA_and_save(activations_dir, save_dir):
-    """This function preprocesses Neural Network features using PCA and save the results
-    in  a specified directory
-.
-
-    Parameters
-    ----------
-    activations_dir : str
-        save path for extracted features.
-    save_dir : str
-        save path for extracted PCA features.
-
-    """
-
-    layers = ['layer_1','layer_2','layer_3','layer_4','layer_5','layer_6','layer_7','layer_8']
-    n_components = 100
+def do_PCA_and_save(activations_dir, save_dir, num_pca_dims):
+    layers = ['layer_1','layer_2','layer_3','layer_4',
+              'layer_5','layer_6','layer_7','layer_8']
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     for layer in tqdm(layers):
@@ -169,10 +79,10 @@ def do_PCA_and_save(activations_dir, save_dir):
         x_train = x[:1000,:]
         x_test = x[1000:,:]
 
-        start_time = time.time()
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
-        ipca = PCA(n_components=n_components)#, batch_size=20)
+        # Full vs incremental (depending on pca dim and sampling rate)
+        ipca = PCA(n_components=num_pca_dims)#, batch_size=20)
         ipca.fit(x_train)
 
         x_train = ipca.transform(x_train)
@@ -181,6 +91,7 @@ def do_PCA_and_save(activations_dir, save_dir):
         test_save_path = os.path.join(save_dir,"test_"+layer)
         np.save(train_save_path,x_train)
         np.save(test_save_path,x_test)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Feature Extraction from Alexnet and preprocessing using PCA')
@@ -198,14 +109,7 @@ def main():
     print('Total Number of Videos: ', len(video_list))
 
     # load Alexnet
-    # Download pretrained Alexnet from:
-    # https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth
-    # and save in the current directory
-    checkpoint_path = "./alexnet.pth"
-    if not os.path.exists(checkpoint_path):
-        url = "https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth"
-        urllib.request.urlretrieve(url, "./alexnet.pth")
-    model = load_alexnet(checkpoint_path)
+    model = load_alexnet()
 
     # get and save activations
     activations_dir = os.path.join(save_dir)
@@ -215,9 +119,10 @@ def main():
     get_activations_and_save(model, video_list, activations_dir)
 
     # preprocessing using PCA and save
-    pca_dir = os.path.join(save_dir, 'pca_100')
+    num_pca_dims = 100
+    pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
     print("-------------performing  PCA----------------------------")
-    do_PCA_and_save(activations_dir, pca_dir)
+    do_PCA_and_save(activations_dir, pca_dir, num_pca_dims)
 
 
 if __name__ == "__main__":
