@@ -1,23 +1,20 @@
 import numpy as np
 import torch
+from sklearn.model_selection import RepeatedKFold
 
 
-def vectorized_correlation(x,y):
-    dim = 0
-
-    centered_x = x - x.mean(axis=dim, keepdims=True)
-    centered_y = y - y.mean(axis=dim, keepdims=True)
-
-    covariance = (centered_x * centered_y).sum(axis=dim, keepdims=True)
-
-    bessel_corrected_covariance = covariance / (x.shape[dim] - 1)
-
-    x_std = x.std(axis=dim, keepdims=True)+1e-8
-    y_std = y.std(axis=dim, keepdims=True)+1e-8
-
-    corr = bessel_corrected_covariance / (x_std * y_std)
-
-    return corr.ravel()
+def fit_linear_model(model_config, X, y):
+    cv = RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
+    n_scores = []
+    for train_index, test_index in cv.split(X):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        ols = OLS_pytorch(model_config["lambda_reg"])
+        ols.fit(X_train, y_train.T)
+        preds = ols.predict(X_test)
+        score = np.mean((y_test - preds)**2)
+        n_scores.append(score)
+    return np.mean(n_scores)
 
 
 class OLS_pytorch(object):

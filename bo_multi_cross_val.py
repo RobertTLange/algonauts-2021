@@ -1,7 +1,10 @@
+from mle_toolbox import MLExperiment
+
 from skopt import Optimizer
 from skopt.space import Real, Integer, Categorical
 from encoding_models.trees import fit_gradboost_model, gb_params_to_search
-from encoding_models.trees import fit_linear_model, lm_params_to_search
+from encoding_models.ols import fit_linear_model, lm_params_to_search
+from encoding_models.networks import fit_mlp_model, mlp_params_to_search
 
 
 def get_hyperspace(params_to_search):
@@ -40,34 +43,34 @@ def run_bayes_opt(smbo_config, params_to_search, X, y):
         print(50*"=")
         print(t, hyper_optimizer.get_result().fun, scores)
         print(hyper_optimizer.get_result().x)
+    # TODO: Save log with mle experiment?!
     return hyper_optimizer
 
 
-def get_data():
+def get_data(subject_id, roi_type):
     from sklearn import preprocessing
     from sklearn.datasets import make_regression
     X, y = make_regression(n_samples=1000, n_features=2000, n_informative=5,
                            n_targets=100, random_state=1, noise=1)
     scaler = preprocessing.MinMaxScaler()
     X = scaler.fit_transform(X)
-    return X, y
+    X_test = None
+    return X, y, X_test
 
 
-def main():
-    X, y = get_data()
-    from encoding_models.ols import OLS_pytorch
-    import numpy as np
-    ols = OLS_pytorch(1e-5)
-    ols.fit(X, y.T)
-    preds = ols.predict(X)
-    score = np.mean((y - preds)**2)
-    print(score)
+def main(mle):
+    subject_id = 0
+    roi_type = 'V1'
+    X, y, X_test = get_data(subject_id, roi_type)
     smbo_config = {"base_estimator": "GP",      # "GP", "RF", "ET", "GBRT"
                    "acq_function": "gp_hedge",  # "LCB", "EI", "PI", "gp_hedge"
                    "n_initial_points": 5,
                    "opt_iters": 1}
     result = run_bayes_opt(smbo_config, lm_params_to_search, X, y)
 
+    # TODO: Fit best model with full data and predict on test set!
 
 if __name__ == "__main__":
-    main()
+    mle = MLExperiment(config_fname="configs/train/base_config.json",
+                       create_jax_prng=True)
+    main(mle)

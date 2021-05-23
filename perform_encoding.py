@@ -7,8 +7,9 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 from nilearn import plotting
-from encoding_models.ols import vectorized_correlation, OLS_pytorch
+from encoding_models.ols import OLS_pytorch
 from utils.helper import save_dict, load_dict, saveasnii
+from utils.evaluate import vectorized_correlation
 
 
 def get_activations(activations_dir, layer_name):

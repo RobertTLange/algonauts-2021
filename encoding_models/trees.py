@@ -6,22 +6,8 @@ import numpy as np
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import RepeatedKFold
-from encoding_models.ols import OLS_pytorch
 
-
-def fit_linear_model(model_config, X, y):
-    cv = RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
-    n_scores = []
-    for train_index, test_index in cv.split(X):
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        ols = OLS_pytorch(model_config["lambda_reg"])
-        ols.fit(X_train, y_train.T)
-        preds = ols.predict(X_test)
-        score = np.mean((y_test - preds)**2)
-        n_scores.append(score)
-    return np.mean(n_scores)
-
+# TODO: Add lightbm model! Faster
 
 def fit_xgb_model(model_config, X, y):
     model = xgb.XGBRegressor(
