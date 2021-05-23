@@ -71,8 +71,8 @@ if __name__ == "__main__":
     #     y = scaler.fit_transform(X_lens) + np.random.normal(size=X_lens.shape)
     #     return X, y
     from sklearn.datasets import make_regression
-    X, y = make_regression(n_samples=5000, n_features=1000, n_informative=20,
-                           n_targets=5, random_state=1, noise=0.5)
+    X, y = make_regression(n_samples=5000, n_features=200, n_informative=20,
+                           n_targets=10, random_state=1, noise=1)
 
     from utils.ols import OLS_pytorch
     ols = OLS_pytorch()
@@ -101,4 +101,10 @@ if __name__ == "__main__":
                    "n_initial_points": 5,
                    "opt_iters": 50}
 
-    result = run_bayes_opt(smbo_config, params_to_search, X, y)
+    # result = run_bayes_opt(smbo_config, params_to_search, X, y)
+    from tpot import TPOTRegressor
+    model = TPOTRegressor(generations=1, population_size=5, n_jobs=5)
+    model = MultiOutputRegressor(model)
+    model = model.fit(X, y)
+    preds = model.predict(X)
+    print(np.mean((y - preds)**2))

@@ -51,6 +51,7 @@
 - BayesOpt API: https://github.com/fmfn/BayesianOptimization
 - Pretrained ViT: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
 - Multioutput cross validation: https://machinelearningmastery.com/multi-output-regression-models-with-python/
+- Teapot evo algo: http://epistasislab.github.io/tpot/
 
 ## Step 1: Extract Alexnet features for the videos
 
