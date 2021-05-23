@@ -21,11 +21,12 @@ def vectorized_correlation(x,y):
 
 
 class OLS_pytorch(object):
-    def __init__(self,use_gpu=False):
+    def __init__(self, lambda_reg=0.0, use_gpu=False):
         self.coefficients = []
         self.use_gpu = use_gpu
         self.X = None
         self.y = None
+        self.lambda_reg = lambda_reg
 
     def fit(self, X, y):
         if len(X.shape) == 1:
@@ -44,7 +45,13 @@ class OLS_pytorch(object):
         Xty = torch.matmul(X.t(),y.unsqueeze(2))
         XtX = XtX.unsqueeze(0)
         XtX = torch.repeat_interleave(XtX, y.shape[0], dim=0)
-        betas_cholesky, _ = torch.solve(Xty, XtX)
+        # Add regularization
+        ident_rep = torch.repeat_interleave(
+                            torch.eye(n=XtX.shape[1]).unsqueeze(0),
+                            y.shape[0], dim=0)
+        XtX_lamb = self.lambda_reg * ident_rep
+
+        betas_cholesky, _ = torch.solve(Xty, XtX + XtX_lamb)
 
         self.coefficients = betas_cholesky
         self.X = X

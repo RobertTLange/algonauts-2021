@@ -4,6 +4,24 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.multioutput import MultiOutputRegressor
 import numpy as np
 
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RepeatedKFold
+from encoding_models.ols import OLS_pytorch
+
+
+def fit_linear_model(model_config, X, y):
+    cv = RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
+    n_scores = []
+    for train_index, test_index in cv.split(X):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        ols = OLS_pytorch(model_config["lambda_reg"])
+        ols.fit(X_train, y_train.T)
+        preds = ols.predict(X_test)
+        score = np.mean((y_test - preds)**2)
+        n_scores.append(score)
+    return np.mean(n_scores)
+
 
 def fit_xgb_model(model_config, X, y):
     model = xgb.XGBRegressor(
@@ -21,12 +39,23 @@ def fit_xgb_model(model_config, X, y):
 
 
 def fit_gradboost_model(model_config, X, y):
+    cv = RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
     model = GradientBoostingRegressor(loss='ls', min_samples_leaf=9,
                                       min_samples_split=9, **model_config)
-    model = MultiOutputRegressor(model)
-    model = model.fit(X, y)
-    preds = model.predict(X)
-    return np.mean((y - preds)**2)
+    wrapper = MultiOutputRegressor(model)
+    # evaluate the model and collect the scores
+    n_scores = cross_val_score(wrapper, X, y,
+                               scoring='neg_mean_absolute_error',
+                               cv=cv, n_jobs=5)
+    # force the scores to be positive
+    n_scores = np.absolute(n_scores)
+    # summarize performance
+    print('MAE: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
+
+    # model = model.fit(X, y)
+    # preds = model.predict(X)
+    # return np.mean((y - preds)**2)
+    return np.mean(n_scores)
 
 
 def fit_teapot_model(model_config, X, y):
@@ -39,36 +68,42 @@ def fit_teapot_model(model_config, X, y):
     return np.mean((y - preds)**2)
 
 
-## XGBoost Hyperparameters
-# params_to_search = {
-# "real":
-#     {"learning_rate": {"begin": 0.01, "end": 1.0, "prior": 'log-uniform'},
-#      "subsample": {"begin": 0.01, "end": 1.0, "prior": 'log-uniform'},
-#      "colsample_bytree": {"begin": 0.01, "end": 1.0, "prior": 'uniform'},
-#      'colsample_bytree': {"begin": 0.01, "end": 1.0, "prior": 'uniform'},
-#      'colsample_bylevel': {"begin": 0.01, "end": 1.0, "prior": 'uniform'},
-#      'reg_lambda': {"begin": 1e-9, "end": 1000., "prior": 'log-uniform'},
-#      'reg_alpha': {"begin": 1e-9, "end": 1.0, "prior": 'log-uniform'},
-#      'gamma': {"begin": 1e-9, "end": 0.5, "prior": 'log-uniform'},
-#      'scale_pos_weight': {"begin": 1e-6, "end": 500., "prior": 'log-uniform'}
-#      },
-# "integer":
-#     {'min_child_weight': {"begin": 0, "end": 10, "prior": 'uniform'},
-#      'max_depth': {"begin": 0, "end": 50, "prior": 'uniform'},
-#      'max_delta_step': {"begin": 0, "end": 20, "prior": 'uniform'},
-#      'min_child_weight': {"begin": 0, "end": 5, "prior": 'uniform'},
-#      'n_estimators': {"begin": 50, "end": 500, "prior": 'uniform'},
-#      }
-# }
+# XGBoost Hyperparameters
+xgb_params_to_search = {
+"real":
+    {"learning_rate": {"begin": 0.01, "end": 1.0, "prior": 'log-uniform'},
+     "subsample": {"begin": 0.01, "end": 1.0, "prior": 'log-uniform'},
+     "colsample_bytree": {"begin": 0.01, "end": 1.0, "prior": 'uniform'},
+     'colsample_bytree': {"begin": 0.01, "end": 1.0, "prior": 'uniform'},
+     'colsample_bylevel': {"begin": 0.01, "end": 1.0, "prior": 'uniform'},
+     'reg_lambda': {"begin": 1e-9, "end": 1000., "prior": 'log-uniform'},
+     'reg_alpha': {"begin": 1e-9, "end": 1.0, "prior": 'log-uniform'},
+     'gamma': {"begin": 1e-9, "end": 0.5, "prior": 'log-uniform'},
+     'scale_pos_weight': {"begin": 1e-6, "end": 500., "prior": 'log-uniform'}
+     },
+"integer":
+    {'min_child_weight': {"begin": 0, "end": 10, "prior": 'uniform'},
+     'max_depth': {"begin": 1, "end": 50, "prior": 'uniform'},
+     'max_delta_step': {"begin": 0, "end": 20, "prior": 'uniform'},
+     'min_child_weight': {"begin": 0, "end": 5, "prior": 'uniform'},
+     'n_estimators': {"begin": 50, "end": 500, "prior": 'uniform'},
+     }
+}
 
 # Sklearn GradientBoostingRegressor Hyperparameters
-params_to_search = {
+gb_params_to_search = {
 "real":
     {"alpha": {"begin": 0.01, "end": 0.999, "prior": 'log-uniform'},
      "learning_rate": {"begin": 0.01, "end": 0.99, "prior": 'log-uniform'}
      },
 "integer":
-    {'max_depth': {"begin": 0, "end": 50, "prior": 'uniform'},
+    {'max_depth': {"begin": 1, "end": 50, "prior": 'uniform'},
      'n_estimators': {"begin": 50, "end": 500, "prior": 'uniform'},
      }
+}
+
+# Linear Regression Hyperparameters
+lm_params_to_search = {
+"real":
+    {"lambda_reg": {"begin": 1e-07, "end": 1e-1, "prior": 'log-uniform'}},
 }

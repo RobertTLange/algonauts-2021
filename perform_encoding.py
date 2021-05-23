@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 from nilearn import plotting
-from utils.ols import vectorized_correlation, OLS_pytorch
+from encoding_models.ols import vectorized_correlation, OLS_pytorch
 from utils.helper import save_dict, load_dict, saveasnii
 
 

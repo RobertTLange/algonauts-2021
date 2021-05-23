@@ -1,6 +1,7 @@
 from skopt import Optimizer
 from skopt.space import Real, Integer, Categorical
-from encoding_models.trees import fit_gradboost_model, params_to_search
+from encoding_models.trees import fit_gradboost_model, gb_params_to_search
+from encoding_models.trees import fit_linear_model, lm_params_to_search
 
 
 def get_hyperspace(params_to_search):
@@ -33,7 +34,7 @@ def run_bayes_opt(smbo_config, params_to_search, X, y):
         model_config = {}
         for i, k in enumerate(param_range.keys()):
             model_config[k] = proposal[i]
-        scores = fit_gradboost_model(model_config, X, y)
+        scores = fit_linear_model(model_config, X, y)
         hyper_optimizer.tell(proposal, scores)
         #print(t, model_config, scores, proposal)
         print(50*"=")
@@ -45,8 +46,8 @@ def run_bayes_opt(smbo_config, params_to_search, X, y):
 def get_data():
     from sklearn import preprocessing
     from sklearn.datasets import make_regression
-    X, y = make_regression(n_samples=5000, n_features=20, n_informative=5,
-                           n_targets=2, random_state=1, noise=1)
+    X, y = make_regression(n_samples=1000, n_features=2000, n_informative=5,
+                           n_targets=100, random_state=1, noise=1)
     scaler = preprocessing.MinMaxScaler()
     X = scaler.fit_transform(X)
     return X, y
@@ -54,18 +55,18 @@ def get_data():
 
 def main():
     X, y = get_data()
-    from utils.ols import OLS_pytorch
+    from encoding_models.ols import OLS_pytorch
     import numpy as np
-    ols = OLS_pytorch()
+    ols = OLS_pytorch(1e-5)
     ols.fit(X, y.T)
     preds = ols.predict(X)
-    print("Multi-OLS:", np.mean((y - preds)**2))
-
+    score = np.mean((y - preds)**2)
+    print(score)
     smbo_config = {"base_estimator": "GP",      # "GP", "RF", "ET", "GBRT"
                    "acq_function": "gp_hedge",  # "LCB", "EI", "PI", "gp_hedge"
                    "n_initial_points": 5,
-                   "opt_iters": 20}
-    result = run_bayes_opt(smbo_config, params_to_search, X, y)
+                   "opt_iters": 1}
+    result = run_bayes_opt(smbo_config, lm_params_to_search, X, y)
 
 
 if __name__ == "__main__":
