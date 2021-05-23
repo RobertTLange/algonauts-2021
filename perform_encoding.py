@@ -22,30 +22,17 @@ def get_activations(activations_dir, layer_name):
     test_activations = scaler.fit_transform(test_activations)
     return train_activations, test_activations
 
+
 def get_fmri(fmri_dir, ROI):
-    """This function loads fMRI data into a numpy array for to a given ROI.
-
-    Parameters
-    ----------
-    fmri_dir : str
-        path to fMRI data.
-    ROI : str
-        name of ROI.
-
-    Returns
-    -------
-    np.array
-        matrix of dimensions #train_vids x #repetitions x #voxels
-        containing fMRI responses to train videos of a given ROI
-
+    """ Loads fMRI data into a numpy array for to a given ROI.
+    matrix of dimensions #train_vids x #repetitions x #voxels
+    containing fMRI responses to train videos of a given ROI
     """
-
-
     # Loading ROI data
     ROI_file = os.path.join(fmri_dir, ROI + ".pkl")
     ROI_data = load_dict(ROI_file)
 
-    # averaging ROI data across repetitions
+    # averaging ROI data across repetitions? WHAT IS MEANED HERE? TIME?
     ROI_data_train = np.mean(ROI_data["train"], axis = 1)
     if ROI == "WB":
         voxel_mask = ROI_data['voxel_mask']
@@ -56,40 +43,28 @@ def get_fmri(fmri_dir, ROI):
 
 def predict_fmri_fast(train_activations, test_activations,
                       train_fmri, use_gpu=False):
-    """This function fits a linear regressor using train_activations and train_fmri,
-    then returns the predicted fmri_pred_test using the fitted weights and
-    test_activations.
-
+    """
     Parameters
     ----------
     train_activations : np.array
         matrix of dimensions #train_vids x #pca_components
         containing activations of train videos.
-    test_activations : np.array
-        matrix of dimensions #test_vids x #pca_components
-        containing activations of test videos
     train_fmri : np.array
         matrix of dimensions #train_vids x  #voxels
         containing fMRI responses to train videos
-    use_gpu : bool
-        Description of parameter `use_gpu`.
-
     Returns
     -------
     fmri_pred_test: np.array
         matrix of dimensions #test_vids x  #voxels
         containing predicted fMRI responses to test videos .
-
     """
-
     reg = OLS_pytorch(use_gpu)
-    reg.fit(train_activations,train_fmri.T)
+    reg.fit(train_activations, train_fmri.T)
     fmri_pred_test = reg.predict(test_activations)
     return fmri_pred_test
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='Encoding model analysis for Algonauts 2021')
     parser.add_argument('-rd','--result_dir', help='saves predicted fMRI activity',default = './results', type=str)
     parser.add_argument('-ad','--activation_dir',help='directory containing DNN activations',default = './alexnet/', type=str)

@@ -27,7 +27,7 @@ class OLS_pytorch(object):
         self.X = None
         self.y = None
 
-    def fit(self,X,y):
+    def fit(self, X, y):
         if len(X.shape) == 1:
             X = self._reshape_x(X)
         if len(y.shape) == 1:
@@ -47,6 +47,8 @@ class OLS_pytorch(object):
         betas_cholesky, _ = torch.solve(Xty, XtX)
 
         self.coefficients = betas_cholesky
+        self.X = X
+        self.y = y
 
     def predict(self, entry):
         if len(entry.shape) == 1:
@@ -62,10 +64,11 @@ class OLS_pytorch(object):
 
     def score(self):
         prediction = torch.matmul(self.X,self.coefficients)
-        prediction = prediction
         yhat = prediction
-        ybar = (torch.sum(self.y,dim=1, keepdim=True)/self.y.shape[1]).unsqueeze(2)
+        ybar = (torch.sum(self.y, dim=1, keepdim=True)/self.y.shape[1]).unsqueeze(2)
         ssreg = torch.sum((yhat-ybar)**2,dim=1, keepdim=True)
+        print(yhat.shape, ybar.shape)
+        print(ssreg/(yhat.shape[0]*yhat.shape[1]))
         sstot = torch.sum((self.y.unsqueeze(2) - ybar)**2,dim=1, keepdim=True)
         score = ssreg / sstot
         return score.cpu().numpy().ravel()

@@ -1,5 +1,4 @@
 ## First Steps to Get Started
-
 1. Generate Alexnet Features and get feeling (code base/runtime)
 2. How much variance explained by PCA - Use larger dim.
 3. Run linear regression encoding.
@@ -8,17 +7,30 @@
 6. Add regularization to linear regression fit
 
 ## Infrastructure
+1. Generate VGG and different ResNet Features once (high sampling?)
+2. Different dim. reduction techniques (PCA dims/PWCCA)
+3. Data Loader (Time Series and Simple FFW - grid over!)
+    - Should be subject and roi specific!
+    - Should be layer-specific as well?
+4. Time/positional encoding feature for different frames
+5. Train/Val setup (90-10 split)
+6. Retrain encoding networks on full data for submission
+7. Submission ready - multiprocessing pipeline (9 + 1 ROIs x 10 subjects)
+8. Cross-Validation Setup (5 fold - 80-20 splits)
 
-1. Generate VGG and different ResNet Features
-2. Different dim. reduction techniques
-3. Data Loader (Time Series and Simple FFW)
-4. Time/positional encoding feature
-5. Train/Val setup (cross-validation?)
-6. Retrain full encoding networks for submission
-7. Submission ready - multiprocessing pipeline (8 regions x 10 subjects)
+## Questions:
+- What are repetitions? And what does this line of code do?
+`ROI_data_train = np.mean(ROI_data["train"], axis = 1)`
+- Is this the time averaged signal? Can we use this as auxiliary tasks?
+- How many voxels are there per ROI? Different across subjects?
+- At what level can model share data? All subject core or all ROI core?
+
+## Data Exploration
+- Heterogeneity across subjects and ROIs
+    - Responses to same video
+    - Voxels recorded
 
 ## Experiments to run
-
 - What is the right sampling rate?
 - What layer fits best for which ROI and subject?
 - What model fits best for which ROI and subject?
@@ -26,9 +38,19 @@
 - Run grid searches and Bayesian optimization on CPU/GPU?
 
 ## Modelling - Mainly on Encoding Side!
-
 - Shared Resnet core + Subject-specific + ROI-specific output heads
 - FFW vs. LSTM and which level recurrence?
+- XGBoostRegressor subject/roi level
+
+## Links:
+- XGBoost Regression: https://github.com/dmlc/xgboost/tree/master/demo/CLI/regression
+- XGBoost CV: https://github.com/dmlc/xgboost/blob/master/demo/guide-python/cross_validation.py
+- Sklearn Multioutput: https://scikit-learn.org/stable/modules/generated/sklearn.multioutput.MultiOutputRegressor.html
+- Multioutput XGBoost: https://gist.github.com/MLWave/4a3f8b0fee43d45646cf118bda4d202a
+- BayesOpt XGBoost: https://www.kaggle.com/btyuhas/bayesian-optimization-with-xgboost
+- BayesOpt API: https://github.com/fmfn/BayesianOptimization
+- Pretrained ViT: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
+- Multioutput cross validation: https://machinelearningmastery.com/multi-output-regression-models-with-python/
 
 ## Step 1: Extract Alexnet features for the videos
 
