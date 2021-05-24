@@ -33,6 +33,7 @@
 ## Experiments to run
 - What is the right sampling rate?
 - What layer fits best for which ROI and subject?
+    - Single layer vs full feature selection from all
 - What model fits best for which ROI and subject?
 - How to combine features of different layers/networks?
 - Run grid searches and Bayesian optimization on CPU/GPU?

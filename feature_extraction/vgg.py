@@ -1,16 +1,6 @@
-import os
-import glob
-import time
-
-import numpy as np
-import scipy.io as sio
-from PIL import Image
-
 import torch
-import torchvision
 import torch.nn as nn
 from torchvision import models
-from torchvision import transforms as trn
 from torch.autograd import Variable as V
 
 
@@ -58,49 +48,11 @@ class VGGNet(nn.Module):
         return features
 
 
-def run_vgg(image_dir, net_save_dir, verbose):
-    """
-    Compute forward pass for vgg pretrained net and save features
-    """
+def load_vgg():
     model = VGGNet()
+    model.load_state_dict(model_zoo.load_url(model_urls['alexnet']))
     if torch.cuda.is_available():
         model.cuda()
     model.eval()
-
-    centre_crop = trn.Compose([
-            trn.Resize((224,224)),
-            trn.ToTensor(),
-            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-
-    image_list = glob.glob(image_dir +"/*.jpg")
-    image_list.sort()
-
-    start_t = time.time()
-    total_t = 0
-
-    for i, image in enumerate(image_list):
-        img = Image.open(image)
-        filename = image.split("/")[-1].split(".")[0]
-        input_img = V(centre_crop(img).unsqueeze(0))
-        if torch.cuda.is_available():
-            input_img=input_img.cuda()
-
-        x = model.forward(input_img)
-        save_path = os.path.join(net_save_dir, filename+".mat")
-        feats={}
-        for i, feat in enumerate(x):
-            feats[model.feat_list[i]] = feat.data.cpu().numpy()
-        sio.savemat(save_path, feats)
-
-        if verbose:
-            if (i+1) % 30 == 0:
-                t_between = time.time() - start_t
-                total_t += t_between
-                start_t = time.time()
-                print("Done processing {}/{} images | T: {:.2f}".format(i+1,
-                                                                        len(image_list),
-                                                                        t_between))
-
-
-    print("Done performing VGG forward pass | Total T: {:.2f}.".format(total_t + time.time() - start_t))
+    return model
+    return

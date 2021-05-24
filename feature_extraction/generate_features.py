@@ -14,6 +14,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, IncrementalPCA
 
 from alexnet import load_alexnet
+from resnet import load_resnet
+from vgg import load_vgg
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -77,53 +79,61 @@ def do_PCA_and_save(activations_dir, save_dir, num_pca_dims):
             temp = np.load(activation_file)
             x[i,:] = temp
         x_train = x[:1000,:]
-        x_test = x[1000:,:]
-
+        x_test = x[1000:]
+        print(x.shape, x_train.shape, x_test.shape)
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
         # Full vs incremental (depending on pca dim and sampling rate)
-        ipca = PCA(n_components=num_pca_dims)#, batch_size=20)
-        ipca.fit(x_train)
+        pca = PCA(n_components=num_pca_dims)#, batch_size=20)
+        pca.fit(x_train)
 
-        x_train = ipca.transform(x_train)
-        x_test = ipca.transform(x_test)
-        train_save_path = os.path.join(save_dir,"train_"+layer)
-        test_save_path = os.path.join(save_dir,"test_"+layer)
+        x_train = pca.transform(x_train)
+        x_test = pca.transform(x_test)
+        train_save_path = os.path.join(save_dir, "train_" + layer)
+        test_save_path = os.path.join(save_dir, "test_" + layer)
         np.save(train_save_path,x_train)
         np.save(test_save_path,x_test)
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Feature Extraction from Alexnet and preprocessing using PCA')
-    parser.add_argument('-vdir','--video_data_dir', help='video data directory',default = './AlgonautsVideos268_All_30fpsmax/', type=str)
-    parser.add_argument('-sdir','--save_dir', help='saves processed features',default = './alexnet', type=str)
-    args = vars(parser.parse_args())
-
-    save_dir=args['save_dir']
+def main(model_type, pca_dims, save_dir, video_dir):
     if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
-    video_dir = args['video_data_dir']
+        os.makedirs(save_dir)
     video_list = glob.glob(video_dir + '/*.mp4')
     video_list.sort()
     print('Total Number of Videos: ', len(video_list))
 
     # load Alexnet
-    model = load_alexnet()
+    if model_type == "alexnet":
+        model = load_alexnet()
+    elif model_type in ['resnet18', 'resnet34', 'resnet50',
+                        'resnet101', 'resnet152']:
+        model = load_resnet(model_type)
+    elif model_type == "vgg":
+        model = load_vgg()
+    print(f'{model_type} Model loaded')
 
-    # get and save activations
-    activations_dir = os.path.join(save_dir)
+    # get and save activations from raw video
+    activations_dir = os.path.join(save_dir, "activations")
     if not os.path.exists(activations_dir):
         os.makedirs(activations_dir)
     print("-------------Saving activations ----------------------------")
     get_activations_and_save(model, video_list, activations_dir)
 
-    # preprocessing using PCA and save
-    num_pca_dims = 100
-    pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
-    print("-------------performing  PCA----------------------------")
-    do_PCA_and_save(activations_dir, pca_dir, num_pca_dims)
+    # # preprocessing using PCA and save
+    # for num_pca_dims in pca_dims:
+    #     pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
+    #     print(f"------performing  PCA: {num_pca_dims}---------")
+    #     do_PCA_and_save(activations_dir, pca_dir, num_pca_dims)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Feature Extraction from Alexnet and preprocessing using PCA')
+    parser.add_argument('-vdir','--video_data_dir',
+                        default = '/Users/rtl/Dropbox/coding/2021/AlgonautsVideos268_All_30fpsmax/')
+    parser.add_argument('-model','--model_type', default = 'resnet18')
+    args = vars(parser.parse_args())
+    model_type = args['model_type']
+    save_dir = f'./features/{model_type}'
+    video_dir = args['video_data_dir']
+    pca_dims = [50, 100, 250, 500, 1000]
+    main(model_type, pca_dims, save_dir, video_dir)

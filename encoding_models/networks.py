@@ -15,3 +15,6 @@ def train_mlp_model(model_config, X, y):
                   "batch_norm": False}
     model = BodyBuilder(**net_config)
     return
+
+
+mlp_params_to_search = {}

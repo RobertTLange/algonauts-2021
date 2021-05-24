@@ -1,8 +1,7 @@
+import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-
-
-__all__ = ['AlexNet', 'alexnet']
+from torchvision import models
 
 
 model_urls = {
@@ -10,76 +9,51 @@ model_urls = {
 }
 
 
-class AlexNet(nn.Module):
+alex_feat_list = ['conv1','ReLU1','maxpool1',\
+'conv2','ReLU2','maxpool2',\
+'conv3','ReLU3',\
+'conv4','ReLU4',\
+'conv5','ReLU5','maxpool5',\
+]
 
-    def __init__(self, num_classes=1000):
+alex_classifier_list = ['Dropout6','fc6','ReLU6','Dropout7','fc7','ReLU7','fc8']
+
+
+class AlexNet(nn.Module):
+    def __init__(self):
+        """Select conv1_1 ~ conv5_1 activation maps."""
         super(AlexNet, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(64, 192, kernel_size=5, padding=2),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            )
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(192, 384, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            )
-        self.conv4 = nn.Sequential(
-            nn.Conv2d(384, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            )
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            )
-        self.fc6 = nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(256 * 6 * 6, 4096),
-            nn.ReLU(inplace=True),
-            )
-        self.fc7 =nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(4096, 4096),
-            )
-        self.fc8 = nn.Sequential(
-            nn.ReLU(inplace=True),
-            nn.Linear(4096, num_classes),
-            )
+        self.select_feats = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5']
+        self.select_classifier = ['fc6' , 'fc7', 'fc8']
+
+        self.feat_list = self.select_feats + self.select_classifier
+
+        self.alex_feats = models.alexnet(pretrained=True).features
+        self.alex_classifier = models.alexnet(pretrained=True).classifier
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
 
     def forward(self, x):
-        out1 = self.conv1(x)
-        out2 = self.conv2(out1)
-        out3 = self.conv3(out2)
-        out4 = self.conv4(out3)
-        out5 = self.conv5(out4)
+        """Extract multiple feature maps."""
+        features = []
+        for name, layer in self.alex_feats._modules.items():
+            x = layer(x)
+            if alex_feat_list[int(name)] in self.feat_list:
+                features.append(x)
 
-        out5_reshaped = out5.view(out5.size(0), 256 * 6 * 6)
-        out6= self.fc6(out5_reshaped)
-        out7= self.fc7(out6)
-        out8 = self.fc8(out7)
-        return out1, out2, out3, out4, out5, out6, out7, out8
+        x = self.avgpool(x)
+        x = x.view(x.size(0), -1)
 
-
-def alexnet(pretrained=False, **kwargs):
-    r"""AlexNet model architecture from the
-    `"One weird trick..." <https://arxiv.org/abs/1404.5997>`_ paper.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = AlexNet(**kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['alexnet']))
-    return model
+        for name, layer in self.alex_classifier._modules.items():
+            x = layer(x)
+            if alex_classifier_list[int(name)] in self.feat_list:
+                features.append(x)
+        return features
 
 
 def load_alexnet():
-    model = alexnet(pretrained=True)
+    model = AlexNet()
+    #state_dict = model_zoo.load_url(model_urls['alexnet'])
+    #model.load_state_dict(state_dict)
     if torch.cuda.is_available():
         model.cuda()
     model.eval()

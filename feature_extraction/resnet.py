@@ -1,64 +1,7 @@
-import os
-import glob
-import time
-
-import numpy as np
-import scipy.io as sio
-from PIL import Image
-
 import torch
-import torchvision
 import torch.nn as nn
-from torchvision import models
-from torchvision import transforms as trn
 from torch.autograd import Variable as V
 import torch.utils.model_zoo as model_zoo
-
-
-def run_resnet(image_dir, net_save_dir, verbose):
-    """
-    Compute forward pass for resnet50 pretrained net and save features
-    """
-    model = resnet50(pretrained=True)
-    if torch.cuda.is_available():
-        model.cuda()
-    model.eval()
-    centre_crop = trn.Compose([
-            trn.Resize((224,224)),
-            trn.ToTensor(),
-            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-    image_list = glob.glob(image_dir +"/*.jpg")
-    image_list.sort()
-
-    start_t = time.time()
-    total_t = 0
-
-    for i, image in enumerate(image_list):
-        img = Image.open(image)
-        filename=image.split("/")[-1].split(".")[0]
-        input_img = V(centre_crop(img).unsqueeze(0))
-        if torch.cuda.is_available():
-            input_img=input_img.cuda()
-
-        x = model.forward(input_img)
-        save_path = os.path.join(net_save_dir, filename+".mat")
-        feats={}
-        for i, feat in enumerate(x):
-            feats[model.feat_list[i]] = feat.data.cpu().numpy()
-        sio.savemat(save_path, feats)
-
-        if verbose:
-            if (i+1) % 30 == 0:
-                t_between = time.time() - start_t
-                total_t += t_between
-                start_t = time.time()
-                print("Done processing {}/{} images | T: {:.2f}".format(i+1,
-                                                                        len(image_list),
-                                                                        t_between))
-
-
-    print("Done performing ResNet50 forward pass | Total T: {:.2f}.".format(total_t + time.time() - start_t))
 
 
 model_urls = {
@@ -220,7 +163,7 @@ class ResNet(nn.Module):
         return x1, x2, x3, x4, x5
 
 
-def resnet18(pretrained=False, **kwargs):
+def resnet18(pretrained=True, **kwargs):
     """Constructs a ResNet-18 model.
 
     Args:
@@ -232,7 +175,7 @@ def resnet18(pretrained=False, **kwargs):
     return model
 
 
-def resnet34(pretrained=False, **kwargs):
+def resnet34(pretrained=True, **kwargs):
     """Constructs a ResNet-34 model.
 
     Args:
@@ -244,7 +187,7 @@ def resnet34(pretrained=False, **kwargs):
     return model
 
 
-def resnet50(pretrained=False, **kwargs):
+def resnet50(pretrained=True, **kwargs):
     """Constructs a ResNet-50 model.
 
     Args:
@@ -256,7 +199,7 @@ def resnet50(pretrained=False, **kwargs):
     return model
 
 
-def resnet101(pretrained=False, **kwargs):
+def resnet101(pretrained=True, **kwargs):
     """Constructs a ResNet-101 model.
 
     Args:
@@ -268,7 +211,7 @@ def resnet101(pretrained=False, **kwargs):
     return model
 
 
-def resnet152(pretrained=False, **kwargs):
+def resnet152(pretrained=True, **kwargs):
     """Constructs a ResNet-152 model.
 
     Args:
@@ -277,4 +220,22 @@ def resnet152(pretrained=False, **kwargs):
     model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
     if pretrained:
         model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
+    return model
+
+
+def load_resnet(resnet_type='resnet18'):
+    if resnet_type == 'resnet18':
+        model = resnet18()
+    elif resnet_type == 'resnet34':
+        model = resnet34()
+    elif resnet_type == 'resnet50':
+        model = resnet50()
+    elif resnet_type == 'resnet101':
+        model = resnet101()
+    elif resnet_type == 'resnet152':
+        model = resnet152()
+
+    if torch.cuda.is_available():
+        model.cuda()
+    model.eval()
     return model
