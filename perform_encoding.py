@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-import argparse
-
 import torch
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from nilearn import plotting
 from encoding_models.ols import OLS_pytorch
-from utils.helper import save_dict, load_dict, saveasnii
+from utils.helper import save_dict, load_dict
 from utils.evaluate import vectorized_correlation
 
 
@@ -59,34 +56,19 @@ def predict_fmri_fast(train_activations, test_activations,
         matrix of dimensions #test_vids x  #voxels
         containing predicted fMRI responses to test videos .
     """
-    reg = OLS_pytorch(use_gpu)
+    reg = OLS_pytorch(lambda_reg=0.01, use_gpu=use_gpu)
     reg.fit(train_activations, train_fmri.T)
     fmri_pred_test = reg.predict(test_activations)
     return fmri_pred_test
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Encoding model analysis for Algonauts 2021')
-    parser.add_argument('-rd','--result_dir', help='saves predicted fMRI activity',default = './results', type=str)
-    parser.add_argument('-ad','--activation_dir',help='directory containing DNN activations',default = './alexnet/', type=str)
-    parser.add_argument('-model','--model',help='model name under which predicted fMRI activity will be saved', default = 'alexnet_devkit', type=str)
-    parser.add_argument('-l','--layer',help='layer from which activations will be used to train and predict fMRI activity', default = 'layer_5', type=str)
-    parser.add_argument('-sub','--sub',help='subject number from which real fMRI data will be used', default = 'sub04', type=str)
-    parser.add_argument('-r','--roi',help='brain region, from which real fMRI data will be used', default = 'EBA', type=str)
-    parser.add_argument('-m','--mode',help='test or val, val returns mean correlation by using 10% of training data for validation', default = 'val', type=str)
-    parser.add_argument('-fd','--fmri_dir',help='directory containing fMRI activity', default = './participants_data_v2021', type=str)
-    parser.add_argument('-v','--visualize',help='visualize whole brain results in MNI space or not', default = True, type=bool)
-    parser.add_argument('-b', '--batch_size',help=' number of voxel to fit at one time in case of memory constraints', default = 1000, type=int)
-    args = vars(parser.parse_args())
-
-
-    mode = args['mode'] # test or val
-    sub = args['sub']
-    ROI = args['roi']
-    model = args['model']
-    layer = args['layer']
-    visualize_results = args['visualize']
-    batch_size = args['batch_size'] # number of voxel to fit at one time in case of memory constraints
+def main(sub='sub04', ROI='EBA', layer='layer_5'):
+    mode = 'val'
+    model = 'alexnet_devkit'
+    batch_size = 1000
+    activation_dir = './data/features/alexnet/pca_50'
+    result_dir = './data/results'
+    fmri_dir = './data/participants_data_v2021'
 
     if torch.cuda.is_available():
         use_gpu = True
@@ -98,15 +80,12 @@ def main():
     else:
         track = "mini_track"
 
-    activation_dir = os.path.join(args['activation_dir'], 'pca_100')
-    fmri_dir = os.path.join(args['fmri_dir'], track)
+    fmri_dir = os.path.join(fmri_dir, track)
 
     sub_fmri_dir = os.path.join(fmri_dir, sub)
-    results_dir = os.path.join(args['result_dir'],args['model'], args['layer'], track, sub)
+    results_dir = os.path.join(result_dir, model, layer, track, sub)
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
-
-    print("ROi is : ", ROI)
 
     train_activations,test_activations = get_activations(activation_dir, layer)
     if track == "full_track":
@@ -128,40 +107,36 @@ def main():
         pred_fmri = np.zeros((num_test_videos,num_voxels))
         pred_fmri_save_path = os.path.join(results_dir, ROI + '_test.npy')
 
-
-    print("number of voxels is ", num_voxels)
     iter = 0
     while iter < num_voxels-batch_size:
-        pred_fmri[:,iter:iter+batch_size] = predict_fmri_fast(train_activations,test_activations,fmri_train[:,iter:iter+batch_size], use_gpu = use_gpu)
+        pred_fmri[:,iter:iter+batch_size] = predict_fmri_fast(train_activations,test_activations,
+                                                              fmri_train[:,iter:iter+batch_size],
+                                                              use_gpu = use_gpu)
         iter = iter+batch_size
-        print((100*iter)//num_voxels," percent complete")
-    pred_fmri[:,iter:] = predict_fmri_fast(train_activations,test_activations,fmri_train[:,iter:iter+batch_size], use_gpu = use_gpu)
+        #print((100*iter)//num_voxels," percent complete")
+    pred_fmri[:,iter:] = predict_fmri_fast(train_activations, test_activations,
+                                           fmri_train[:,iter:iter+batch_size],
+                                           use_gpu = use_gpu)
 
     if mode == 'val':
         score = vectorized_correlation(fmri_test,pred_fmri)
-        print("----------------------------------------------------------------------------")
-        print("Mean correlation for ROI : ",ROI, "in ",sub, " is :", round(score.mean(), 3))
-
-        # result visualization for whole brain (full_track)
-        if track == "full_track" and visualize_results:
-            visual_mask_3D = np.zeros((78,93,71))
-            visual_mask_3D[voxel_mask==1]= score
-            brain_mask = './example.nii'
-            nii_save_path =  os.path.join(results_dir, ROI + '_val.nii')
-            saveasnii(brain_mask,nii_save_path,visual_mask_3D)
-            view = plotting.view_img_on_surf(nii_save_path, threshold=None, surf_mesh='fsaverage',\
-                                            title = 'Correlation for sub' + sub, colorbar=False)
-            view_save_path = os.path.join(results_dir,ROI + '_val.html')
-            view.save_as_html(view_save_path)
-            print("Results saved in this directory: ", results_dir)
-            view.open_in_browser()
-
+        # print(f"Subject: {sub} | ROI: {ROI} | Layer: {layer} | # voxels {num_voxels} | Corr: {round(score.mean(), 3)}")
 
     np.save(pred_fmri_save_path, pred_fmri)
-
-
-    print("----------------------------------------------------------------------------")
-    print("ROI done : ", ROI)
+    return round(score.mean(), 3), num_voxels
 
 if __name__ == "__main__":
-    main()
+    all_subjects = ['sub01', 'sub02', 'sub03', 'sub04', 'sub05',
+                    'sub06', 'sub07', 'sub08', 'sub09', 'sub10']
+    all_layers = ['layer_1', 'layer_2', 'layer_3', 'layer_4',
+                  'layer_5', 'layer_6', 'layer_7', 'layer_8']
+    all_rois = ['LOC','FFA','STS','EBA','PPA','V1','V2','V3','V4']
+    for ROI in all_rois:
+        for sub in all_subjects:
+            all_scores = []
+            for layer in all_layers:
+                score_l, num_voxels = main(sub, ROI, layer)
+                all_scores.append(score_l)
+            best_layer_id = np.argmax(all_scores)
+            print(f"Subject: {sub} | ROI: {ROI} | Best Layer: {all_layers[best_layer_id]} | # voxels {num_voxels} | Corr: {all_scores[best_layer_id]}")
+        print("----------------------------------------------------------------------------")

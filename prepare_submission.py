@@ -7,8 +7,10 @@ from utils.helper import save_dict
 
 def main():
     parser = argparse.ArgumentParser(description='Prepares submission for Algonauts 2021')
-    parser.add_argument('-rd','--result_dir', help='contains predicted fMRI activity',default = './results/alexnet_devkit/layer_5', type=str)
-    parser.add_argument('-t','--track', help='mini_track for all ROIs, full_track for whole brain (WB)', default = 'mini_track', type=str)
+    parser.add_argument('-rd','--result_dir', help='contains predicted fMRI activity',
+                        default = './results/alexnet_devkit/layer_5', type=str)
+    parser.add_argument('-t','--track', help='mini_track - all ROIs, full_track - WB',
+                        default = 'mini_track', type=str)
     args = vars(parser.parse_args())
     track = args['track']
     result_dir = args['result_dir']
@@ -31,7 +33,6 @@ def main():
             if not os.path.exists(ROI_result_file):
                 print("---------Warning : submission not ready ----------")
                 print("Result not found for ",sub, " and ROI: ",ROI)
-                print("Please check if the directory is correct or generate predicted data for ROI: ", ROI , " in subject: ", sub)
                 return
             ROI_result = np.load(ROI_result_file)
             ROI_results[sub] = ROI_result

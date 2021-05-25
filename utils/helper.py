@@ -1,4 +1,3 @@
-import nibabel as nib
 import pickle
 
 def save_dict(di_, filename_):
@@ -17,6 +16,7 @@ def load_dict(filename_):
 
 
 def saveasnii(brain_mask, nii_save_path, nii_data):
+    import nibabel as nib
     img = nib.load(brain_mask)
     nii_img = nib.Nifti1Image(nii_data, img.affine, img.header)
     nib.save(nii_img, nii_save_path)

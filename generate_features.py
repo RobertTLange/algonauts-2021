@@ -1,11 +1,9 @@
 import os
 import glob
-import argparse
 from tqdm import tqdm
 
 import numpy as np
 import cv2
-from PIL import Image
 
 import torch
 from torch.autograd import Variable as V
@@ -13,9 +11,7 @@ from torchvision import transforms as trn
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, IncrementalPCA
 
-from alexnet import load_alexnet
-from resnet import load_resnet
-from vgg import load_vgg
+from feature_extraction import load_alexnet, load_resnet, load_vgg
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -61,21 +57,23 @@ def get_activations_and_save(model, video_list, activations_dir,
                 else:
                     activations[i] =  activations[i] + feat.data.cpu().numpy().ravel()
         for layer in range(len(activations)):
-            save_path = os.path.join(activations_dir, video_file_name+"_"+"layer" + "_" + str(layer+1) + ".npy")
-            np.save(save_path,activations[layer]/float(num_frames))
+            save_path = os.path.join(activations_dir,
+                                     video_file_name+ "_" + "layer" + "_" + str(layer+1) + ".npy")
+            np.save(save_path, activations[layer]/float(num_frames))
+    return len(activations)
 
 
-def do_PCA_and_save(activations_dir, save_dir, num_pca_dims):
-    layers = ['layer_1','layer_2','layer_3','layer_4',
-              'layer_5','layer_6','layer_7','layer_8']
+def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
+    # TODO: Layerwise vs aggregated PCA
+    layers = ['layer_' + str(l+1) for l in range(num_layers)]
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     for layer in tqdm(layers):
         activations_file_list = glob.glob(activations_dir +'/*'+layer+'.npy')
         activations_file_list.sort()
-        feature_dim = np.load(activations_file_list[0])
-        x = np.zeros((len(activations_file_list),feature_dim.shape[0]))
-        for i,activation_file in enumerate(activations_file_list):
+        feature_dim = np.load(activations_file_list[0]).shape[0]
+        x = np.zeros((len(activations_file_list),feature_dim))
+        for i, activation_file in enumerate(activations_file_list):
             temp = np.load(activation_file)
             x[i,:] = temp
         x_train = x[:1000,:]
@@ -86,9 +84,13 @@ def do_PCA_and_save(activations_dir, save_dir, num_pca_dims):
         # Full vs incremental (depending on pca dim and sampling rate)
         pca = PCA(n_components=num_pca_dims)#, batch_size=20)
         pca.fit(x_train)
+        #print(pca.explained_variance_)
+        #print(pca.explained_variance_ratio_)
+        print(pca.explained_variance_ratio_.cumsum()[-1])
 
         x_train = pca.transform(x_train)
         x_test = pca.transform(x_test)
+        print(x.shape, x_train.shape, x_test.shape)
         train_save_path = os.path.join(save_dir, "train_" + layer)
         test_save_path = os.path.join(save_dir, "test_" + layer)
         np.save(train_save_path,x_train)
@@ -117,23 +119,24 @@ def main(model_type, pca_dims, save_dir, video_dir):
     if not os.path.exists(activations_dir):
         os.makedirs(activations_dir)
     print("-------------Saving activations ----------------------------")
-    get_activations_and_save(model, video_list, activations_dir)
+    num_layers = get_activations_and_save(model, video_list, activations_dir)
 
-    # # preprocessing using PCA and save
-    # for num_pca_dims in pca_dims:
-    #     pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
-    #     print(f"------performing  PCA: {num_pca_dims}---------")
-    #     do_PCA_and_save(activations_dir, pca_dir, num_pca_dims)
+    # preprocessing using PCA and save
+    for num_pca_dims in pca_dims:
+        pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
+        print(f"------performing  PCA: {num_pca_dims}---------")
+        do_PCA_and_save(activations_dir, pca_dir, num_layers, num_pca_dims)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Feature Extraction from Alexnet and preprocessing using PCA')
-    parser.add_argument('-vdir','--video_data_dir',
-                        default = '/Users/rtl/Dropbox/coding/2021/AlgonautsVideos268_All_30fpsmax/')
-    parser.add_argument('-model','--model_type', default = 'resnet18')
-    args = vars(parser.parse_args())
-    model_type = args['model_type']
-    save_dir = f'./features/{model_type}'
-    video_dir = args['video_data_dir']
+    video_dir = './data/AlgonautsVideos268_All_30fpsmax/'
     pca_dims = [50, 100, 250, 500, 1000]
-    main(model_type, pca_dims, save_dir, video_dir)
+    all_models = [
+                  'alexnet',
+                  # 'vgg',
+                  # 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'
+                  ]
+    # Loop over all models, create features from forward passes and reduce dims
+    for model_type in all_models:
+        save_dir = f'./data/features/{model_type}'
+        main(model_type, pca_dims, save_dir, video_dir)
