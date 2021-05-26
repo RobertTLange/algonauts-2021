@@ -1,10 +1,16 @@
 import numpy as np
 import torch
 from sklearn.model_selection import RepeatedKFold
+from utils.evaluate import vectorized_correlation
 
+# Linear Regression Hyperparameters
+lm_params_to_search = {
+"real":
+    {"lambda_reg": {"begin": 1, "end": 100000, "prior": 'log-uniform'}},
+}
 
 def fit_linear_model(model_config, X, y):
-    cv = RepeatedKFold(n_splits=5, n_repeats=1, random_state=1)
+    cv = RepeatedKFold(n_splits=10, n_repeats=1, random_state=1)
     n_scores = []
     for train_index, test_index in cv.split(X):
         X_train, X_test = X[train_index], X[test_index]
@@ -12,8 +18,10 @@ def fit_linear_model(model_config, X, y):
         ols = OLS_pytorch(model_config["lambda_reg"])
         ols.fit(X_train, y_train.T)
         preds = ols.predict(X_test)
-        score = np.mean((y_test - preds)**2)
-        n_scores.append(score)
+        mse_score = np.mean((y_test - preds)**2)
+        corr_score = vectorized_correlation(y_test, preds)
+        #n_scores.append(- corr_score.mean())
+        n_scores.append(mse_score.mean())
     return np.mean(n_scores)
 
 

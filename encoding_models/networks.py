@@ -4,7 +4,7 @@ from encoding_models.body_builder import BodyBuilder
 from encoding_models.train_dojo import TrainDojo
 
 
-def train_mlp_model(model_config, X, y):
+def fit_mlp_model(model_config, X, y):
     net_config = {"input_dim": (1, 2000),
                   "layers_info": [["flatten"],
                                   ["linear", 512, True],

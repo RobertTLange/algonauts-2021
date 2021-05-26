@@ -87,9 +87,3 @@ gb_params_to_search = {
      'n_estimators': {"begin": 50, "end": 500, "prior": 'uniform'},
      }
 }
-
-# Linear Regression Hyperparameters
-lm_params_to_search = {
-"real":
-    {"lambda_reg": {"begin": 1e-07, "end": 1e-1, "prior": 'log-uniform'}},
-}

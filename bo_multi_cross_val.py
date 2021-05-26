@@ -2,6 +2,7 @@ from mle_toolbox import MLExperiment
 
 from skopt import Optimizer
 from skopt.space import Real, Integer, Categorical
+from utils.helper import get_encoding_data
 from encoding_models.trees import fit_gradboost_model, gb_params_to_search
 from encoding_models.ols import fit_linear_model, lm_params_to_search
 from encoding_models.networks import fit_mlp_model, mlp_params_to_search
@@ -47,30 +48,22 @@ def run_bayes_opt(smbo_config, params_to_search, X, y):
     return hyper_optimizer
 
 
-def get_data(subject_id, roi_type):
-    from sklearn import preprocessing
-    from sklearn.datasets import make_regression
-    X, y = make_regression(n_samples=1000, n_features=2000, n_informative=5,
-                           n_targets=100, random_state=1, noise=1)
-    scaler = preprocessing.MinMaxScaler()
-    X = scaler.fit_transform(X)
-    X_test = None
-    return X, y, X_test
+def main():
+    X, y, X_test = get_encoding_data(fmri_dir='./data/participants_data_v2021',
+                                     activations_dir='./data/features/alexnet/pca_50',
+                                     layer_id='layer_1',
+                                     subject_id='sub01', roi_type='V1')
 
-
-def main(mle):
-    subject_id = 0
-    roi_type = 'V1'
-    X, y, X_test = get_data(subject_id, roi_type)
+    print(X.shape, y.shape, X_test.shape)
     smbo_config = {"base_estimator": "GP",      # "GP", "RF", "ET", "GBRT"
                    "acq_function": "gp_hedge",  # "LCB", "EI", "PI", "gp_hedge"
                    "n_initial_points": 5,
-                   "opt_iters": 1}
+                   "opt_iters": 20}
     result = run_bayes_opt(smbo_config, lm_params_to_search, X, y)
 
-    # TODO: Fit best model with full data and predict on test set!
+    # TODO: Periodically - fit best model with full data and predict on test set!
+    # Store prediction in submission directory
 
 if __name__ == "__main__":
-    mle = MLExperiment(config_fname="configs/train/base_config.json",
-                       create_jax_prng=True)
-    main(mle)
+    #mle = MLExperiment(config_fname="configs/train/base_config.json")
+    main()

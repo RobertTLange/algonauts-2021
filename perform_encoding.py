@@ -2,41 +2,10 @@
 import os
 import torch
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 
 from encoding_models.ols import OLS_pytorch
-from utils.helper import save_dict, load_dict
+from utils.helper import save_dict, load_dict, get_activations, get_fmri
 from utils.evaluate import vectorized_correlation
-
-
-def get_activations(activations_dir, layer_name):
-    """ Loads NN features into a np array according to layer. """
-    train_file = os.path.join(activations_dir,"train_" + layer_name + ".npy")
-    test_file = os.path.join(activations_dir,"test_" + layer_name + ".npy")
-    train_activations = np.load(train_file)
-    test_activations = np.load(test_file)
-    scaler = StandardScaler()
-    train_activations = scaler.fit_transform(train_activations)
-    test_activations = scaler.fit_transform(test_activations)
-    return train_activations, test_activations
-
-
-def get_fmri(fmri_dir, ROI):
-    """ Loads fMRI data into a numpy array for to a given ROI.
-    matrix of dimensions #train_vids x #repetitions x #voxels
-    containing fMRI responses to train videos of a given ROI
-    """
-    # Loading ROI data
-    ROI_file = os.path.join(fmri_dir, ROI + ".pkl")
-    ROI_data = load_dict(ROI_file)
-
-    # averaging ROI data across repetitions? WHAT IS MEANED HERE? TIME?
-    ROI_data_train = np.mean(ROI_data["train"], axis = 1)
-    if ROI == "WB":
-        voxel_mask = ROI_data['voxel_mask']
-        return ROI_data_train, voxel_mask
-
-    return ROI_data_train
 
 
 def predict_fmri_fast(train_activations, test_activations,
@@ -89,7 +58,7 @@ def main(sub='sub04', ROI='EBA', layer='layer_5'):
 
     train_activations,test_activations = get_activations(activation_dir, layer)
     if track == "full_track":
-        fmri_train_all,voxel_mask = get_fmri(sub_fmri_dir,ROI)
+        fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir,ROI)
     else:
         fmri_train_all = get_fmri(sub_fmri_dir,ROI)
     num_voxels = fmri_train_all.shape[1]
@@ -132,11 +101,14 @@ if __name__ == "__main__":
                   'layer_5', 'layer_6', 'layer_7', 'layer_8']
     all_rois = ['LOC','FFA','STS','EBA','PPA','V1','V2','V3','V4']
     for ROI in all_rois:
+        subject_scores = []
         for sub in all_subjects:
             all_scores = []
             for layer in all_layers:
                 score_l, num_voxels = main(sub, ROI, layer)
                 all_scores.append(score_l)
             best_layer_id = np.argmax(all_scores)
+            subject_scores.append(all_scores[best_layer_id])
             print(f"Subject: {sub} | ROI: {ROI} | Best Layer: {all_layers[best_layer_id]} | # voxels {num_voxels} | Corr: {all_scores[best_layer_id]}")
+        print(f"ROI: {ROI} | Mean Corr: {np.mean(subject_scores)}")
         print("----------------------------------------------------------------------------")

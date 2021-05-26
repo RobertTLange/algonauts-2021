@@ -1,12 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.utils.model_zoo as model_zoo
 from torchvision import models
-
-
-model_urls = {
-    'alexnet': 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth',
-}
 
 
 alex_feat_list = ['conv1','ReLU1','maxpool1',\
@@ -54,6 +48,12 @@ def load_alexnet():
     model = AlexNet()
     #state_dict = model_zoo.load_url(model_urls['alexnet'])
     #model.load_state_dict(state_dict)
+    # import torch.utils.model_zoo as model_zoo
+    #
+    # model_urls = {
+    #     'alexnet': 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth',
+    # }
+
     if torch.cuda.is_available():
         model.cuda()
     model.eval()

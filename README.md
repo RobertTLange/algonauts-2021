@@ -53,6 +53,8 @@
 - Pretrained ViT: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
 - Multioutput cross validation: https://machinelearningmastery.com/multi-output-regression-models-with-python/
 - Teapot evo algo: http://epistasislab.github.io/tpot/
+- Torchvision models: https://pytorch.org/vision/stable/models.html
+- Alexnet torch vision: https://pytorch.org/vision/stable/_modules/torchvision/models/alexnet.html#alexnet
 
 ## Step 1: Extract Alexnet features for the videos
 
