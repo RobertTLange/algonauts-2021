@@ -78,9 +78,10 @@ def main(sub='sub04', ROI='EBA', layer='layer_5'):
 
     iter = 0
     while iter < num_voxels-batch_size:
-        pred_fmri[:,iter:iter+batch_size] = predict_fmri_fast(train_activations,test_activations,
+        pred_fmri[:,iter:iter+batch_size] = predict_fmri_fast(train_activations,
+                                                              test_activations,
                                                               fmri_train[:,iter:iter+batch_size],
-                                                              use_gpu = use_gpu)
+                                                              use_gpu=use_gpu)
         iter = iter+batch_size
         #print((100*iter)//num_voxels," percent complete")
     pred_fmri[:,iter:] = predict_fmri_fast(train_activations, test_activations,

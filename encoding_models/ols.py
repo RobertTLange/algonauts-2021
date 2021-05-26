@@ -2,11 +2,13 @@ import numpy as np
 import torch
 from sklearn.model_selection import RepeatedKFold
 from utils.evaluate import vectorized_correlation
+import jax
+import jax.numpy as jnp
 
 # Linear Regression Hyperparameters
 lm_params_to_search = {
 "real":
-    {"lambda_reg": {"begin": 1, "end": 100000, "prior": 'log-uniform'}},
+    {"lambda_reg": {"begin": 1e-7, "end": 1e-1, "prior": 'log-uniform'}},
 }
 
 def fit_linear_model(model_config, X, y):
@@ -15,14 +17,31 @@ def fit_linear_model(model_config, X, y):
     for train_index, test_index in cv.split(X):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
-        ols = OLS_pytorch(model_config["lambda_reg"])
-        ols.fit(X_train, y_train.T)
-        preds = ols.predict(X_test)
+        beta = vectorize_ols(X_train, y_train, model_config["lambda_reg"])
+        preds = vectorize_pred(X_test, beta)
         mse_score = np.mean((y_test - preds)**2)
         corr_score = vectorized_correlation(y_test, preds)
         #n_scores.append(- corr_score.mean())
         n_scores.append(mse_score.mean())
     return np.mean(n_scores), np.std(n_scores)
+
+
+def jax_ols(X, y, lambda_reg):
+    ones = jnp.ones(shape=X.shape[0]).reshape(-1, 1)
+    X_design = jnp.concatenate((ones, X), 1)
+    p1 = (X_design.T @ X_design + lambda_reg * jnp.identity(X_design.shape[1]))
+    p2 = X_design.T @ y
+    beta = jnp.linalg.inv(p1) @ p2
+    return beta
+
+def jax_predict(X, beta):
+    ones = jnp.ones(shape=X.shape[0]).reshape(-1, 1)
+    X_design = jnp.concatenate((ones, X), 1)
+    return X_design @ beta
+
+
+vectorize_ols = jax.vmap(jax_ols, in_axes=(None, 1, None))
+vectorize_pred = jax.vmap(jax_predict, in_axes=(None, 0), out_axes=1)
 
 
 class OLS_pytorch(object):
@@ -79,8 +98,6 @@ class OLS_pytorch(object):
         yhat = prediction
         ybar = (torch.sum(self.y, dim=1, keepdim=True)/self.y.shape[1]).unsqueeze(2)
         ssreg = torch.sum((yhat-ybar)**2,dim=1, keepdim=True)
-        print(yhat.shape, ybar.shape)
-        print(ssreg/(yhat.shape[0]*yhat.shape[1]))
         sstot = torch.sum((self.y.unsqueeze(2) - ybar)**2,dim=1, keepdim=True)
         score = ssreg / sstot
         return score.cpu().numpy().ravel()

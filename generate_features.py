@@ -11,7 +11,7 @@ from torchvision import transforms as trn
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, IncrementalPCA
 
-from feature_extraction import load_alexnet, load_resnet, load_vgg
+from feature_extraction import load_alexnet, load_resnet, load_vgg, load_timm
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -114,7 +114,7 @@ def main(model_type, pca_dims, save_dir, video_dir):
     elif model_type == "vgg":
         model = load_vgg()
     else:
-        model = load_timm_model(model_type)
+        model = load_timm(model_type)
     print(f'{model_type} Model loaded')
 
     # get and save activations from raw video

@@ -6,7 +6,7 @@
                   "feature_model": "alexnet",
                   "dim_reduction": 100,
                   # Hyperparameter-specific data (BOpt)
-                  "bo_opt_iters": 50,
+                  "bo_opt_iters": 1,
                   "smbo_config": {"base_estimator": "GP",
                                   "acq_func": "gp_hedge",
                                   "n_initial_points": 10}
@@ -17,7 +17,7 @@
                 "time_to_print": ["total_bo_iters"],
                 "what_to_print": ["cv_score_mean",
                                   "best_bo_score"],
-                "print_every_k_updates": 10,
+                "print_every_k_updates": 1,
                 "overwrite_experiment_dir": 1},
  "net_config": {# Encoding model-specific data
                 "encoding_model": "linear_regression"}}
