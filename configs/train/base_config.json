@@ -1,3 +1,23 @@
-{"net_config": {},
- "train_config": {},
- "log_config": {}}
+{"train_config": {"roi_type": "V1",
+                  "subject_id": "sub01",
+                  "layer_id": "layer_1",
+                  # Feature-specific data (NN model)
+                  "fmri_dir": "./data/participants_data_v2021",
+                  "feature_model": "alexnet",
+                  "dim_reduction": 100,
+                  # Hyperparameter-specific data (BOpt)
+                  "bo_opt_iters": 50,
+                  "smbo_config": {"base_estimator": "GP",
+                                  "acq_func": "gp_hedge",
+                                  "n_initial_points": 10},
+                  # Encoding model-specific data
+                  "encoding_model": "linear_regression"},
+ "log_config": {"time_to_track": ["total_bo_iters"],
+                "what_to_track": ["cv_score_mean", "cv_score_std",
+                                  "best_bo_score"],
+                "time_to_print": ["total_bo_iters"],
+                "what_to_print": ["cv_score_mean",
+                                  "best_bo_score"],
+                "print_every_k_updates": 10,
+                "overwrite_experiment_dir": 1},
+ "net_config": {}}

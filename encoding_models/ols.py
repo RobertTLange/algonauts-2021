@@ -22,7 +22,7 @@ def fit_linear_model(model_config, X, y):
         corr_score = vectorized_correlation(y_test, preds)
         #n_scores.append(- corr_score.mean())
         n_scores.append(mse_score.mean())
-    return np.mean(n_scores)
+    return np.mean(n_scores), np.std(n_scores)
 
 
 class OLS_pytorch(object):

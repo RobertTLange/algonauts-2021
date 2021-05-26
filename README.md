@@ -5,6 +5,7 @@
 4. Make first submission with Alexnet
 5. Look at fMRI data - variation across subjects (same video/ROI)
 6. Add regularization to linear regression fit
+7. Replace linear model with JAX and vmap - make sure regularization works as intended
 
 ## Infrastructure
 1. Generate VGG and different ResNet Features once (high sampling?)

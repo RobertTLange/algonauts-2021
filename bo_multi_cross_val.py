@@ -1,3 +1,4 @@
+import os
 from mle_toolbox import MLExperiment
 
 from skopt import Optimizer
@@ -25,45 +26,52 @@ def get_hyperspace(params_to_search):
     return param_range
 
 
-def run_bayes_opt(smbo_config, params_to_search, X, y):
+def run_bayes_opt(mle, params_to_search, X, y):
     """ Simple loop running SMBO + Cross-Validation. """
     param_range = get_hyperspace(params_to_search)
     hyper_optimizer = Optimizer(dimensions=list(param_range.values()),
                                 random_state=1,
-                                base_estimator=smbo_config["base_estimator"],
-                                acq_func=smbo_config["acq_function"],
-                                n_initial_points=smbo_config["n_initial_points"])
-    for t in range(smbo_config["opt_iters"]):
-        proposal = hyper_optimizer.ask(n_points=1)[0]
+                                **mle.train_config.smbo_config)
+    for t in range(mle.train_config["bo_opt_iters"]):
+        proposal = hyper_optimizer.ask()
         model_config = {}
         for i, k in enumerate(param_range.keys()):
             model_config[k] = proposal[i]
-        scores = fit_linear_model(model_config, X, y)
-        hyper_optimizer.tell(proposal, scores)
-        #print(t, model_config, scores, proposal)
-        print(50*"=")
-        print(t, hyper_optimizer.get_result().fun, scores)
-        print(hyper_optimizer.get_result().x)
-    # TODO: Save log with mle experiment?!
+        if mle.train_config.encoding_model == "linear_regression":
+            cv_score_mean, cv_score_std  = fit_linear_model(model_config, X, y)
+        hyper_optimizer.tell(proposal, cv_score_mean)
+
+        time_tick = {"total_bo_iters": t+1}
+        stats_tick = {"cv_score_mean": cv_score_mean,
+                      "cv_score_std": cv_score_std,
+                      "best_bo_score": hyper_optimizer.get_result().fun}
+        mle.update_log(time_tick, stats_tick, save=True)
+        # TODO: Also store BO parameter!
+        # print(hyper_optimizer.get_result().x)
     return hyper_optimizer
 
 
-def main():
-    X, y, X_test = get_encoding_data(fmri_dir='./data/participants_data_v2021',
-                                     activations_dir='./data/features/alexnet/pca_50',
-                                     layer_id='layer_1',
-                                     subject_id='sub01', roi_type='V1')
+def main(mle):
+    # Load encoding data - Model features and fMRI targets
+    activations_dir = ('./data/features/' +
+                       mle.train_config.feature_model +
+                       '/pca_' + str(mle.train_config.dim_reduction))
+    X, y, X_test = get_encoding_data(fmri_dir=mle.train_config.fmri_dir,
+                                     activations_dir=activations_dir,
+                                     layer_id=mle.train_config.layer_id,
+                                     subject_id=mle.train_config.subject_id,
+                                     roi_type=mle.train_config.roi_type)
 
-    print(X.shape, y.shape, X_test.shape)
-    smbo_config = {"base_estimator": "GP",      # "GP", "RF", "ET", "GBRT"
-                   "acq_function": "gp_hedge",  # "LCB", "EI", "PI", "gp_hedge"
-                   "n_initial_points": 5,
-                   "opt_iters": 20}
-    result = run_bayes_opt(smbo_config, lm_params_to_search, X, y)
+    # Select parameter space to search over!
+    if mle.train_config.encoding_model == "linear_regression":
+        params_to_search = lm_params_to_search
 
-    # TODO: Periodically - fit best model with full data and predict on test set!
-    # Store prediction in submission directory
+    # Run SMBO loop with cross-validation
+    result = run_bayes_opt(mle, params_to_search, X, y)
+
+    # TODO: Fit best model with full data and predict on test set!
+
 
 if __name__ == "__main__":
-    #mle = MLExperiment(config_fname="configs/train/base_config.json")
-    main()
+    mle = MLExperiment(config_fname="configs/train/base_config.json")
+    main(mle)
