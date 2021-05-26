@@ -37,7 +37,7 @@ def run_bayes_opt(mle, params_to_search, X, y):
         model_config = {}
         for i, k in enumerate(param_range.keys()):
             model_config[k] = proposal[i]
-        if mle.train_config.encoding_model == "linear_regression":
+        if mle.net_config.encoding_model == "linear_regression":
             cv_score_mean, cv_score_std  = fit_linear_model(model_config, X, y)
         hyper_optimizer.tell(proposal, cv_score_mean)
 
@@ -63,11 +63,11 @@ def main(mle):
                                      roi_type=mle.train_config.roi_type)
 
     # Select parameter space to search over!
-    if mle.train_config.encoding_model == "linear_regression":
+    if mle.net_config.encoding_model == "linear_regression":
         params_to_search = lm_params_to_search
 
     # Run SMBO loop with cross-validation
-    result = run_bayes_opt(mle, params_to_search, X, y)
+    hyper_optimizer = run_bayes_opt(mle, params_to_search, X, y)
 
     # TODO: Fit best model with full data and predict on test set!
 

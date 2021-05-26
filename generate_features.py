@@ -51,14 +51,15 @@ def get_activations_and_save(model, video_list, activations_dir,
             if torch.cuda.is_available():
                 input_img=input_img.cuda()
             x = model.forward(input_img)
-            for i,feat in enumerate(x):
+            for i, feat in enumerate(x):
                 if frame==0:
                     activations.append(feat.data.cpu().numpy().ravel())
                 else:
                     activations[i] =  activations[i] + feat.data.cpu().numpy().ravel()
         for layer in range(len(activations)):
             save_path = os.path.join(activations_dir,
-                                     video_file_name+ "_" + "layer" + "_" + str(layer+1) + ".npy")
+                                     video_file_name + "_" + "layer"
+                                     + "_" + str(layer+1) + ".npy")
             np.save(save_path, activations[layer]/float(num_frames))
     return len(activations)
 
@@ -78,7 +79,7 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
             x[i,:] = temp
         x_train = x[:1000,:]
         x_test = x[1000:]
-        print(x.shape, x_train.shape, x_test.shape)
+        #print(x.shape, x_train.shape, x_test.shape)
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
         # Full vs incremental (depending on pca dim and sampling rate)
@@ -90,11 +91,11 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
 
         x_train = pca.transform(x_train)
         x_test = pca.transform(x_test)
-        print(x.shape, x_train.shape, x_test.shape)
+        #print(x.shape, x_train.shape, x_test.shape)
         train_save_path = os.path.join(save_dir, "train_" + layer)
         test_save_path = os.path.join(save_dir, "test_" + layer)
-        np.save(train_save_path,x_train)
-        np.save(test_save_path,x_test)
+        np.save(train_save_path, x_train)
+        np.save(test_save_path, x_test)
 
 
 def main(model_type, pca_dims, save_dir, video_dir):
@@ -112,6 +113,8 @@ def main(model_type, pca_dims, save_dir, video_dir):
         model = load_resnet(model_type)
     elif model_type == "vgg":
         model = load_vgg()
+    else:
+        model = load_timm_model(model_type)
     print(f'{model_type} Model loaded')
 
     # get and save activations from raw video
@@ -132,9 +135,9 @@ if __name__ == "__main__":
     video_dir = './data/AlgonautsVideos268_All_30fpsmax/'
     pca_dims = [50, 100, 250, 500, 1000]
     all_models = [
-                  'alexnet',
-                  # 'vgg',
-                  # 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'
+                  'alexnet', 'vgg',
+                  'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+                  'efficientnet_b3', 'resnext50_32x4d'
                   ]
     # Loop over all models, create features from forward passes and reduce dims
     for model_type in all_models:

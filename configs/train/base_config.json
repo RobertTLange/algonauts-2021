@@ -9,9 +9,8 @@
                   "bo_opt_iters": 50,
                   "smbo_config": {"base_estimator": "GP",
                                   "acq_func": "gp_hedge",
-                                  "n_initial_points": 10},
-                  # Encoding model-specific data
-                  "encoding_model": "linear_regression"},
+                                  "n_initial_points": 10}
+                              },
  "log_config": {"time_to_track": ["total_bo_iters"],
                 "what_to_track": ["cv_score_mean", "cv_score_std",
                                   "best_bo_score"],
@@ -20,4 +19,5 @@
                                   "best_bo_score"],
                 "print_every_k_updates": 10,
                 "overwrite_experiment_dir": 1},
- "net_config": {}}
+ "net_config": {# Encoding model-specific data
+                "encoding_model": "linear_regression"}}

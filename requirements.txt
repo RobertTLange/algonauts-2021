@@ -1,0 +1,7 @@
+torch
+timm
+torchvision
+sklearn
+numpy
+scikit-optimize
+jax
