@@ -38,9 +38,11 @@ def wrap_data_torch(X: np.ndarray,
     test_set = Dataset(X_test, y_test)
 
     # Set parameters for the dataloaders
-    train_params = {'batch_size': batch_size, 'shuffle': True,
+    train_params = {'batch_size': batch_size,
+                    'shuffle': True,
                     'num_workers': 3}
-    test_params = {'batch_size': 100, 'shuffle': True,
+    test_params = {'batch_size': 100,
+                   'shuffle': True,
                    'num_workers': 3}
 
     train_loader = data.DataLoader(training_set, **train_params)

@@ -1,18 +1,21 @@
 import torch
-
+from .early_stopping import EarlyStopping
 
 class TrainDojo(object):
     """ Learning Loop for basic regression/classification setups """
     def __init__(self, network, optimizer, criterion,
                  train_loader, test_loader=None,
                  log_batch_interval=None, scheduler=None,
-                 device=torch.device('cpu')):
+                 patience=7, device=torch.device('cpu')):
 
         self.network = network              # Network to train
         self.criterion = criterion          # Loss criterion to minimize
         self.device = device                # Device for tensors
         self.optimizer = optimizer          # PyTorch optimizer for SGD
         self.scheduler = scheduler          # Learning rate scheduler
+        self.patience = patience            # Early stopping patience
+        if self.patience is not None:
+            self.early_stopping = EarlyStopping(patience=patience, verbose=True)
 
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -25,14 +28,21 @@ class TrainDojo(object):
         # Get Initial Performance after Network Initialization
         train_performance = self.get_network_performance(test=False)
         test_performance = self.get_network_performance(test=True)
+        if self.patience is not None:
+            self.early_stopping(test_performance, self.network)
 
         for epoch_id in range(1, num_epochs+1):
             # Train the network for a single epoch
             self.train_for_epoch(epoch_id)
+            if self.patience is not None:
+                if self.early_stopping.early_stop:
+                    return - self.early_stopping.best_score
 
             # Update the learning rate using the scheduler (if desired)
             if self.scheduler is not None:
                 self.scheduler.step()
+        if self.patience is not None:
+            return - self.early_stopping.best_score
 
     def train_for_epoch(self, epoch_id=0):
         """ Perform one epoch of training with train data loader """
@@ -56,17 +66,18 @@ class TrainDojo(object):
                 # Get Current Performance after Single Epoch of Training
                 train_performance = self.get_network_performance(test=False)
                 test_performance = self.get_network_performance(test=True)
-                # print(train_performance, test_performance)
-                # Update the logging instance
-                clock_tick = [epoch_id, batch_idx+1, self.batch_processed]
-                stats_tick = train_performance + test_performance
-                self.network.train()
+                # early_stopping needs the validation loss to check if it has decresed,
+                # and if it has, it will make a checkpoint of the current model
+                self.early_stopping(test_performance, self.network)
+                if self.early_stopping.early_stop:
+                    break
+
 
     def get_network_performance(self, test=False):
         """ Get the performance of the network """
         loader = self.test_loader if test else self.train_loader
         self.network.eval()
-        loss = 0
+        loss, b_counter = 0, 0
         with torch.no_grad():
             # Loop over batches and get average batch accuracy/loss
             for data, target in loader:
@@ -74,6 +85,7 @@ class TrainDojo(object):
                 output = self.network(data.float())
                 target = target.float()
                 loss += self.criterion(output, target).sum().item()
+                b_counter += 1
 
-        avg_loss = loss/len(loader.dataset)
+        avg_loss = loss/b_counter
         return avg_loss

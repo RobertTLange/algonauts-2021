@@ -5,7 +5,7 @@ import numpy as np
 
 from encoding_models.ols import OLS_pytorch
 from utils.helper import save_dict, load_dict, get_activations, get_fmri
-from utils.evaluate import vectorized_correlation
+from utils.evaluate import evaluation_metrics
 
 
 def predict_fmri_fast(train_activations, test_activations,
@@ -48,19 +48,13 @@ def main(sub='sub04', ROI='EBA', layer='layer_5', mode='val'):
     else:
         track = "mini_track"
 
-    fmri_dir = os.path.join(fmri_dir, track)
-
-    sub_fmri_dir = os.path.join(fmri_dir, sub)
     results_dir = os.path.join(result_dir, model, track, sub)
     if mode == "test":
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
 
     train_activations,test_activations = get_activations(activation_dir, layer)
-    if track == "full_track":
-        fmri_train_all, voxel_mask = get_fmri(sub_fmri_dir,ROI)
-    else:
-        fmri_train_all = get_fmri(sub_fmri_dir,ROI)
+    fmri_train_all = get_fmri(fmri_dir, track, sub, ROI)
     num_voxels = fmri_train_all.shape[1]
     if mode == 'val':
         # Here as an example we use first 900 videos as training and rest of the videos as validation
@@ -88,9 +82,9 @@ def main(sub='sub04', ROI='EBA', layer='layer_5', mode='val'):
                                            use_gpu = use_gpu)
 
     if mode == 'val':
-        score = vectorized_correlation(fmri_test,pred_fmri)
+        corr, mse, mae = evaluation_metrics(fmri_test, pred_fmri)
         # print(f"Subject: {sub} | ROI: {ROI} | Layer: {layer} | # voxels {num_voxels} | Corr: {round(score.mean(), 3)}")
-        return round(score.mean(), 3), num_voxels
+        return corr, mse, mae, num_voxels
     else:
         np.save(pred_fmri_save_path, pred_fmri)
         return pred_fmri_save_path
@@ -110,8 +104,8 @@ if __name__ == "__main__":
         for sub in all_subjects:
             all_scores = []
             for layer in all_layers:
-                score_l, num_voxels = main(sub, ROI, layer, mode="val")
-                all_scores.append(score_l)
+                corr, mse, mae, num_voxels = main(sub, ROI, layer, mode="val")
+                all_scores.append(corr)
             best_layer_id = np.argmax(all_scores)
             subject_scores.append(all_scores[best_layer_id])
             print(f"Subject: {sub} | ROI: {ROI} | Best Layer: {all_layers[best_layer_id]} | # voxels {num_voxels} | Corr: {all_scores[best_layer_id]}")
