@@ -1,6 +1,6 @@
 from encoding_models.trees import fit_gradboost_model, gb_params_to_search
 from encoding_models.ols import fit_linear_model, lm_params_to_search
-from encoding_models.networks import fit_mlp_model, mlp_params_to_search
+from encoding_models.neural_networks import fit_mlp_model, mlp_params_to_search
 
 from skopt import Optimizer
 from skopt.space import Real, Integer, Categorical

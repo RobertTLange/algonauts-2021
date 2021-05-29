@@ -17,7 +17,6 @@ class TrainDojo(object):
         self.train_loader = train_loader
         self.test_loader = test_loader
 
-        self.problem_type = problem_type
         self.log_batch_interval = log_batch_interval
         self.batch_processed = 0
 
@@ -45,12 +44,7 @@ class TrainDojo(object):
             # Clear gradients & perform forward as well as backward pass
             self.optimizer.zero_grad()
             output = self.network(data.float())
-
-            # If we are training on a regression problem - change datatype!
-            if not self.problem_type == "classification":
-                target = target.float()
-
-            loss = self.criterion(output, target)
+            loss = self.criterion(output, target.float())
             loss.backward()
             self.optimizer.step()
 
@@ -62,6 +56,7 @@ class TrainDojo(object):
                 # Get Current Performance after Single Epoch of Training
                 train_performance = self.get_network_performance(test=False)
                 test_performance = self.get_network_performance(test=True)
+                # print(train_performance, test_performance)
                 # Update the logging instance
                 clock_tick = [epoch_id, batch_idx+1, self.batch_processed]
                 stats_tick = train_performance + test_performance
