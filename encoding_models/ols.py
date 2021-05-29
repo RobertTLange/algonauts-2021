@@ -5,14 +5,16 @@ from utils.evaluate import vectorized_correlation
 import jax
 import jax.numpy as jnp
 
+
 # Linear Regression Hyperparameters
 lm_params_to_search = {
 "real":
     {"lambda_reg": {"begin": 1e-7, "end": 1e-1, "prior": 'log-uniform'}},
 }
 
-def fit_linear_model(model_config, X, y):
-    cv = RepeatedKFold(n_splits=10, n_repeats=1, random_state=1)
+
+def fit_linear_model(model_config, X, y, cv_folds):
+    cv = RepeatedKFold(n_splits=cv_folds, n_repeats=1, random_state=1)
     n_scores = []
     for train_index, test_index in cv.split(X):
         X_train, X_test = X[train_index], X[test_index]

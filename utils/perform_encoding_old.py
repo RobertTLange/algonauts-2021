@@ -2,11 +2,36 @@
 import os
 import torch
 import numpy as np
+
+from encoding_models.ols import OLS_pytorch
 from utils.helper import save_dict, load_dict, get_activations, get_fmri
 from utils.evaluate import vectorized_correlation
 
 
-def perform_test_encoding(sub='sub04', ROI='EBA', layer='layer_5', mode='val'):
+def predict_fmri_fast(train_activations, test_activations,
+                      train_fmri, use_gpu=False):
+    """
+    Parameters
+    ----------
+    train_activations : np.array
+        matrix of dimensions #train_vids x #pca_components
+        containing activations of train videos.
+    train_fmri : np.array
+        matrix of dimensions #train_vids x  #voxels
+        containing fMRI responses to train videos
+    Returns
+    -------
+    fmri_pred_test: np.array
+        matrix of dimensions #test_vids x  #voxels
+        containing predicted fMRI responses to test videos .
+    """
+    reg = OLS_pytorch(lambda_reg=0.01, use_gpu=use_gpu)
+    reg.fit(train_activations, train_fmri.T)
+    fmri_pred_test = reg.predict(test_activations)
+    return fmri_pred_test
+
+
+def main(sub='sub04', ROI='EBA', layer='layer_5', mode='val'):
     model = 'alexnet_devkit'
     batch_size = 1000
     activation_dir = './data/features/alexnet/pca_50'

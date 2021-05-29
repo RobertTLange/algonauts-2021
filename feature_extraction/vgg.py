@@ -50,7 +50,6 @@ class VGGNet(nn.Module):
 
 def load_vgg():
     model = VGGNet()
-    model.load_state_dict(model_zoo.load_url(model_urls['alexnet']))
     if torch.cuda.is_available():
         model.cuda()
     model.eval()

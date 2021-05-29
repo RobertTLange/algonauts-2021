@@ -11,7 +11,10 @@ from torchvision import transforms as trn
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, IncrementalPCA
 
-from feature_extraction import load_alexnet, load_resnet, load_vgg, load_timm
+from alexnet import load_alexnet
+from vgg import load_vgg
+from resnet import load_resnet
+from timm import load_timm
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -135,7 +138,8 @@ if __name__ == "__main__":
     video_dir = './data/AlgonautsVideos268_All_30fpsmax/'
     pca_dims = [50, 100, 250, 500, 1000]
     all_models = [
-                  'alexnet', 'vgg',
+                  #'alexnet',
+                  'vgg',
                   'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                   'efficientnet_b3', 'resnext50_32x4d'
                   ]
