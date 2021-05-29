@@ -6,7 +6,7 @@
                   "feature_model": "alexnet",
                   "dim_reduction": 100,
                   # Hyperparameter-specific data (BOpt)
-                  "bo_opt_iters": 1,
+                  "bo_opt_iters": 30,
                   "cv_folds": 10,
                   "smbo_config": {"base_estimator": "GP",
                                   "acq_func": "gp_hedge",

@@ -32,8 +32,7 @@ def get_encoding_data(fmri_dir='./data/participants_data_v2021',
     if roi_type == "WB": track = "full_track"
     else: track = "mini_track"
     X, X_test = get_activations(activations_dir, layer_id)
-    sub_fmri_dir = os.path.join(fmri_dir, track, subject_id)
-    y = get_fmri(sub_fmri_dir, roi_type)
+    y = get_fmri(fmri_dir, track, subject_id, roi_type)
     return X, y, X_test
 
 
@@ -49,15 +48,18 @@ def get_activations(activations_dir, layer_name):
     return train_activations, test_activations
 
 
-def get_fmri(fmri_dir, ROI):
+def get_fmri(fmri_dir, track, subject_id, ROI, mean=True):
     """ Loads fMRI data into a numpy array for to a given ROI.
     matrix of dimensions #train_vids x #repetitions x #voxels
     containing fMRI responses to train videos of a given ROI
     """
     # Loading ROI data
-    ROI_file = os.path.join(fmri_dir, ROI + ".pkl")
+    ROI_file = os.path.join(fmri_dir, track, subject_id, ROI + ".pkl")
     ROI_data = load_dict(ROI_file)
 
     # averaging ROI data across repetitions? WHAT IS MEANED HERE? TIME?
-    ROI_data_train = np.mean(ROI_data["train"], axis = 1)
+    if mean:
+        ROI_data_train = np.mean(ROI_data["train"], axis = 1)
+    else:
+        ROI_data_train = ROI_data["train"]
     return ROI_data_train
