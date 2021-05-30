@@ -15,7 +15,8 @@ class TrainDojo(object):
         self.scheduler = scheduler          # Learning rate scheduler
         self.patience = patience            # Early stopping patience
         if self.patience is not None:
-            self.early_stopping = EarlyStopping(patience=patience, verbose=True)
+            self.early_stopping = EarlyStopping(patience=patience,
+                                                verbose=False)
 
         self.train_loader = train_loader
         self.test_loader = test_loader

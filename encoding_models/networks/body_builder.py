@@ -34,11 +34,18 @@ class BodyBuilder(nn.Module):
 
     def initialize_valid_activations(self):
         """ Dictionary mapping strings to activations. """
-        self.str_to_act = {"relu": nn.ReLU(), "sigmoid": nn.Sigmoid(),
-                           "softplus": nn.Softplus(), "tanh": nn.Tanh(),
+        self.str_to_act = {"relu": nn.ReLU(),
+                           "sigmoid": nn.Sigmoid(),
+                           "softplus": nn.Softplus(),
+                           "tanh": nn.Tanh(),
                            "softmax": nn.Softmax(dim=1),
                            "log_softmax": nn.LogSoftmax(dim=1),
-                           "identity": nn.Identity()}
+                           "identity": nn.Identity(),
+                           "prelu": nn.PReLU(),
+                           "leaky_relu": nn.LeakyReLU(),
+                           "selu": nn.SELU(),
+                           "elu": nn.ELU()
+                           }
 
     def build_network(self):
         """ Function builds the network architecture """

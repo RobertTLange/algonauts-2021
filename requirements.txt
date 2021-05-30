@@ -6,5 +6,6 @@ sklearn
 numpy
 scikit-optimize
 jax
+jaxlib
 opencv-python
 torchvision

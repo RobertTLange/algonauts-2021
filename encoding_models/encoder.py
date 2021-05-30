@@ -4,16 +4,24 @@ from encoding_models.ols import (fit_linear_model,
 # from encoding_models.trees import (fit_gradboost_model,
 #                                    predict_gradboost_model,
 #                                    gb_params_to_search)
-# from encoding_models.networks import (fit_mlp_model,
-#                                       predict_mlp_model,
-#                                       mlp_params_to_search)
+from encoding_models.mlp_networks import (fit_mlp_model,
+                                          predict_mlp_model,
+                                          mlp_params_to_search)
 import numpy as np
 from sklearn.model_selection import RepeatedKFold
 from utils.evaluate import evaluation_metrics
 
 
+def get_model_hyperparams(model_name):
+    if model_name == "linear_regression":
+        return lm_params_to_search
+    elif model_name == "mlp_network":
+        return mlp_params_to_search
+
+
 class EncoderFitter(object):
     def __init__(self, model_name, num_cv_folds, X, y, X_test):
+        """ Wrapper Class for CV fitting and predicting test data. """
         self.model_name = model_name
         self.num_cv_folds = num_cv_folds
         self.X = X
@@ -22,17 +30,22 @@ class EncoderFitter(object):
 
     @property
     def hyperparams(self):
-        if self.model_name == "linear_regression":
-            return lm_params_to_search
+        """ Considered hyperparameters in search/BO. """
+        return get_model_hyperparams(self.model_name)
 
     def fit(self, model_config, X_train, y_train, X_val, y_val):
+        """ Fit and evaluate model once. """
         if self.model_name == "linear_regression":
             model_params = fit_linear_model(model_config, X_train, y_train)
             y_pred = predict_linear_model(model_params, X_val)
+        elif self.model_name == "mlp_network":
+            model_params = fit_mlp_model(model_config, X_train, y_train)
+            y_pred = predict_mlp_model(model_params, X_val)
         mse, mae, corr = evaluation_metrics(y_val, y_pred)
         return mse, mae, corr
 
     def cv_fit(self, model_config):
+        """ Run cross-validation fitting and evaluation. """
         cv = RepeatedKFold(n_splits=self.num_cv_folds,
                            n_repeats=1, random_state=1)
         mse_scores, mae_scores, corr_scores = [], [], []
@@ -54,6 +67,7 @@ class EncoderFitter(object):
         return cv_scores_mean, cv_scores_std
 
     def predict_on_test(self, model_config):
+        """ Fit model on entire data and return predictions on test. """
         if self.model_name == "linear_regression":
             model_params = fit_linear_model(model_config, self.X, self.y)
             y_pred = predict_linear_model(model_params, self.X_test)

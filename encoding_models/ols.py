@@ -16,8 +16,8 @@ def fit_linear_model(model_config, X, y):
     beta = vectorize_ols(X, y, model_config["lambda_reg"])
     return beta
 
-def predict_linear_model(model_config, X):
-    return vectorize_pred(X, model_config)
+def predict_linear_model(model_params, X):
+    return vectorize_pred(X, model_params)
 
 def jax_ols(X, y, lambda_reg):
     ones = jnp.ones(shape=X.shape[0]).reshape(-1, 1)

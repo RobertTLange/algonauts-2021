@@ -19,7 +19,7 @@ def get_hyperspace(params_to_search):
     return param_range
 
 
-def run_bayes_opt(mle, fitter, param_hyperspace):
+def run_bayes_opt(mle, fitter, param_hyperspace, layer_id):
     """ Simple loop running SMBO + Cross-Validation. """
     hyper_optimizer = Optimizer(dimensions=list(param_hyperspace.values()),
                                 random_state=1,
@@ -31,11 +31,17 @@ def run_bayes_opt(mle, fitter, param_hyperspace):
             model_config[k] = proposal[i]
 
         cv_score_mean, cv_score_std  = fitter.cv_fit(model_config)
-        hyper_optimizer.tell(proposal,
-                             cv_score_mean[mle.train_config.bo_eval_metric])
+        # BO always minimizes - negative correlation!
+        metric_to_tell = (- cv_score_mean[mle.train_config.bo_eval_metric]
+                          if mle.train_config.bo_eval_metric == "corr_mean"
+                          else cv_score_mean[mle.train_config.bo_eval_metric])
+        hyper_optimizer.tell(proposal, metric_to_tell)
 
         time_tick = {"total_bo_iters": t+1}
-        stats_tick = {"best_bo_score": hyper_optimizer.get_result().fun}
+        stats_tick = {"layer_id": layer_id,
+                      "best_bo_score": - hyper_optimizer.get_result().fun
+                      if mle.train_config.bo_eval_metric == "corr_mean"
+                      else hyper_optimizer.get_result().fun }
         for i, k in enumerate(param_hyperspace):
             stats_tick[k] = proposal[i]
         for i, k in enumerate(cv_score_mean):
@@ -45,4 +51,4 @@ def run_bayes_opt(mle, fitter, param_hyperspace):
     best_config = {}
     for i, k in enumerate(param_hyperspace.keys()):
         best_config[k] = hyper_optimizer.get_result().x[i]
-    return best_config
+    return hyper_optimizer.get_result().fun, best_config
