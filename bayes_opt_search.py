@@ -1,7 +1,3 @@
-from encoding_models.trees import fit_gradboost_model, gb_params_to_search
-from encoding_models.ols import fit_linear_model, lm_params_to_search
-from encoding_models.neural_networks import fit_mlp_model, mlp_params_to_search
-
 from skopt import Optimizer
 from skopt.space import Real, Integer, Categorical
 
@@ -23,7 +19,7 @@ def get_hyperspace(params_to_search):
     return param_range
 
 
-def run_bayes_opt(mle, param_hyperspace, X, y):
+def run_bayes_opt(mle, fitter, param_hyperspace):
     """ Simple loop running SMBO + Cross-Validation. """
     hyper_optimizer = Optimizer(dimensions=list(param_hyperspace.values()),
                                 random_state=1,
@@ -34,17 +30,19 @@ def run_bayes_opt(mle, param_hyperspace, X, y):
         for i, k in enumerate(param_hyperspace.keys()):
             model_config[k] = proposal[i]
 
-        if mle.net_config.encoding_model == "linear_regression":
-            cv_score_mean, cv_score_std  = fit_linear_model(model_config, X, y,
-                                                            mle.train_config.cv_folds)
-
-        hyper_optimizer.tell(proposal, cv_score_mean)
+        cv_score_mean, cv_score_std  = fitter.cv_fit(model_config)
+        hyper_optimizer.tell(proposal,
+                             cv_score_mean[mle.train_config.bo_eval_metric])
 
         time_tick = {"total_bo_iters": t+1}
-        stats_tick = {"cv_score_mean": cv_score_mean,
-                      "cv_score_std": cv_score_std,
-                      "best_bo_score": hyper_optimizer.get_result().fun}
+        stats_tick = {"best_bo_score": hyper_optimizer.get_result().fun}
         for i, k in enumerate(param_hyperspace):
-            stats_tick[k] = hyper_optimizer.get_result().x[i]
+            stats_tick[k] = proposal[i]
+        for i, k in enumerate(cv_score_mean):
+            stats_tick[k] = cv_score_mean[k]
         mle.update_log(time_tick, stats_tick, save=True)
-    return hyper_optimizer
+
+    best_config = {}
+    for i, k in enumerate(param_hyperspace.keys()):
+        best_config[k] = hyper_optimizer.get_result().x[i]
+    return best_config

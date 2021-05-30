@@ -1,9 +1,10 @@
 import torch
 import numpy as np
 
+
 def vectorized_correlation(x,y):
-    x = torch.Tensor(x)
-    y = torch.Tensor(y)
+    x = np.array(x).ravel()
+    y = np.array(y).ravel()
     dim = 0
     centered_x = x - x.mean(axis=dim, keepdims=True)
     centered_y = y - y.mean(axis=dim, keepdims=True)
@@ -17,7 +18,7 @@ def vectorized_correlation(x,y):
 
     corr = bessel_corrected_covariance / (x_std * y_std)
 
-    return corr.ravel()
+    return corr[0]
 
 
 def evaluation_metrics(y, y_pred):

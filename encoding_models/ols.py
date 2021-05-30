@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from sklearn.model_selection import RepeatedKFold
+
 from utils.evaluate import vectorized_correlation
 import jax
 import jax.numpy as jnp
@@ -12,26 +12,18 @@ lm_params_to_search = {
     {"lambda_reg": {"begin": 1e-7, "end": 1e-1, "prior": 'log-uniform'}},
 }
 
+def fit_linear_model(model_config, X, y):
+    beta = vectorize_ols(X, y, model_config["lambda_reg"])
+    return beta
 
-def fit_linear_model(model_config, X, y, cv_folds):
-    cv = RepeatedKFold(n_splits=cv_folds, n_repeats=1, random_state=1)
-    n_scores = []
-    for train_index, test_index in cv.split(X):
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        beta = vectorize_ols(X_train, y_train, model_config["lambda_reg"])
-        preds = vectorize_pred(X_test, beta)
-        mse_score = np.mean((y_test - preds)**2)
-        corr_score = vectorized_correlation(y_test, preds)
-        #n_scores.append(- corr_score.mean())
-        n_scores.append(mse_score.mean())
-    return np.mean(n_scores), np.std(n_scores)
-
+def predict_linear_model(model_config, X):
+    return vectorize_pred(X, model_config)
 
 def jax_ols(X, y, lambda_reg):
     ones = jnp.ones(shape=X.shape[0]).reshape(-1, 1)
     X_design = jnp.concatenate((ones, X), 1)
-    p1 = (X_design.T @ X_design + lambda_reg * jnp.identity(X_design.shape[1]))
+    p1 = (X_design.T @ X_design + lambda_reg *
+          jnp.identity(X_design.shape[1]))
     p2 = X_design.T @ y
     beta = jnp.linalg.inv(p1) @ p2
     return beta

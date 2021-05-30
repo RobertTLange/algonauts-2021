@@ -14,7 +14,7 @@ from sklearn.decomposition import PCA, IncrementalPCA
 from alexnet import load_alexnet
 from vgg import load_vgg
 from resnet import load_resnet
-from timm import load_timm
+from timm_models import load_timm
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -139,9 +139,9 @@ if __name__ == "__main__":
     pca_dims = [50, 100, 250, 500, 1000]
     all_models = [
                   #'alexnet',
-                  'vgg',
-                  'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-                  'efficientnet_b3', 'resnext50_32x4d'
+                  #'vgg',
+                  #'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+                  #'efficientnet_b3', 'resnext50_32x4d'
                   ]
     # Loop over all models, create features from forward passes and reduce dims
     for model_type in all_models:

@@ -1,11 +1,7 @@
 from mle_toolbox import MLExperiment
 from utils.helper import get_encoding_data
 from bayes_opt_search import get_hyperspace, run_bayes_opt
-#from perform_encoding import perform_encoding
-
-from encoding_models.trees import fit_gradboost_model, gb_params_to_search
-from encoding_models.ols import fit_linear_model, lm_params_to_search
-from encoding_models.networks import fit_mlp_model, mlp_params_to_search
+from encoding_models import EncoderFitter
 
 
 def main(mle):
@@ -20,19 +16,20 @@ def main(mle):
                                      subject_id=mle.train_config.subject_id,
                                      roi_type=mle.train_config.roi_type)
 
-    # Get params, update keys to track and run SMBO loop with cross-validation
-    if mle.net_config.encoding_model == "linear_regression":
-        params_to_search = lm_params_to_search
-    param_hyperspace = get_hyperspace(params_to_search)
+    # Get params, update tracked keys + run SMBO loop with CV
+    fitter = EncoderFitter(mle.net_config.encoding_model,
+                           mle.train_config.num_cv_folds,
+                           X, y, X_test)
+    param_hyperspace = get_hyperspace(fitter.hyperparams)
     mle.log.extend_tracking(list(param_hyperspace.keys()))
-
-    best_params = run_bayes_opt(mle, param_hyperspace, X, y)
+    best_config = run_bayes_opt(mle, fitter, param_hyperspace)
 
     # Fit best model with full data, predict on test set!
-    # y_pred = perform_test_encoding(mle, best_params, X, y, X_test)
+    y_pred = fitter.predict_on_test(best_config)
 
     # Store best models predictions and model itself
-
+    pred_fname = "to_define"
+    mle.log.save_to_extra_dir(y_pred, pred_fname)
 
 if __name__ == "__main__":
     mle = MLExperiment(config_fname="configs/train/base_config.json")
