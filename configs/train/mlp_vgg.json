@@ -2,7 +2,7 @@
                   "subject_id": "sub01",
                   # Feature-specific data (NN model)
                   "fmri_dir": "./data/participants_data_v2021",
-                  "feature_model": "alexnet",
+                  "feature_model": "vgg",
                   "feature_layers_to_consider": ["layer_1", "layer_2",
                                                  "layer_3", "layer_4",
                                                  "layer_5", "layer_6",
@@ -10,7 +10,7 @@
                   "dim_reduction": 100,
                   # Hyperparameter-specific data (BOpt)
                   "bo_eval_metric": "corr_mean",
-                  "bo_opt_iters": 30,
+                  "bo_opt_iters": 50,
                   "num_cv_folds": 10,
                   "smbo_config": {"base_estimator": "GP",
                                   "acq_func": "gp_hedge",

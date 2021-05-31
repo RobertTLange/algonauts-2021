@@ -27,8 +27,8 @@ mlp_default_params = {"batch_size": 32,
 def fit_mlp_model(model_config, X, y):
     """ Build and train MLP Encoder with early stopping. """
     # Build model config based on proposed model_config
-    core_layers = (model_config["num_hidden_layers"]
-                   *[["linear", model_config["num_hidden_units"], True]])
+    core_layers = (int(model_config["num_hidden_layers"])
+                   *[["linear", int(model_config["num_hidden_units"]), True]])
     layers_info = [["flatten"],
                     *core_layers,
                     ["linear", y.shape[1], True]]

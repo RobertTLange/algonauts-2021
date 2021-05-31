@@ -41,7 +41,7 @@ def run_bayes_opt(mle, fitter, param_hyperspace, layer_id):
         stats_tick = {"layer_id": layer_id,
                       "best_bo_score": - hyper_optimizer.get_result().fun
                       if mle.train_config.bo_eval_metric == "corr_mean"
-                      else hyper_optimizer.get_result().fun }
+                      else hyper_optimizer.get_result().fun}
         for i, k in enumerate(param_hyperspace):
             stats_tick[k] = proposal[i]
         for i, k in enumerate(cv_score_mean):
