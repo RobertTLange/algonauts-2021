@@ -3,8 +3,8 @@ meta_job_args:
     project_name: "algo"
     job_type: "hyperparameter-search"
     base_train_fname: "run_algos.py"
-    base_train_config: "configs/train/base_config.json"
-    experiment_dir: "experiments/base_bo/"
+    base_train_config: "configs/train/mlp_alexnet.json"
+    experiment_dir: "experiments/mlp_alexnet_bo_20/"
 
 # Parameters specific to the hyperparameter search
 param_search_args:
@@ -17,8 +17,8 @@ param_search_args:
     problem_type: "final"
     eval_metrics:
         - "best_bo_score"
-    num_search_batches: 2
-    num_iter_per_batch: 50
+    num_search_batches: 1
+    num_iter_per_batch: 100
     num_evals_per_iter: 1
     params_to_search:
         categorical:
@@ -49,7 +49,7 @@ param_search_args:
 single_job_args:
     job_name: "algo"
     num_gpus: 0
-    num_logical_cores: 3
+    num_logical_cores: 2
     log_file: "log"
     err_file: "err"
     env_name: "algonauts"

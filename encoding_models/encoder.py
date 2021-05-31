@@ -71,4 +71,7 @@ class EncoderFitter(object):
         if self.model_name == "linear_regression":
             model_params = fit_linear_model(model_config, self.X, self.y)
             y_pred = predict_linear_model(model_params, self.X_test)
-        return y_pred
+        elif self.model_name == "mlp_network":
+            model_params = fit_mlp_model(model_config, self.X, self.y)
+            y_pred = predict_mlp_model(model_params, self.X_test)
+        return model_params, y_pred

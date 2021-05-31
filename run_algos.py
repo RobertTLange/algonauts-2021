@@ -44,9 +44,10 @@ def main(mle):
             best_layer = layer_id
             best_perf = best_l_score
 
-    # Fit best model with full data, predict on test set!
+    # Fit best model with full data, predict on test set and save model!
     best_config = layer_perf_tracker[best_layer]["config"]
-    y_pred = fitter.predict_on_test(best_config)
+    model_params, y_pred = fitter.predict_on_test(best_config)
+    mle.log.save_model(model_params)
 
     # Store best models predictions and model itself
     pred_fname = (mle.train_config.subject_id + "_" +
