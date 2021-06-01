@@ -1,7 +1,5 @@
 import numpy as np
 import torch
-
-from utils.evaluate import vectorized_correlation
 import jax
 import jax.numpy as jnp
 

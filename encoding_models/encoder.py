@@ -7,6 +7,9 @@ from encoding_models.ols import (fit_linear_model,
 from encoding_models.mlp_networks import (fit_mlp_model,
                                           predict_mlp_model,
                                           mlp_params_to_search)
+from encoding_models.elastic_net import (fit_elastic_net,
+                                         predict_elastic_net,
+                                         elastic_params_to_search)
 import numpy as np
 from sklearn.model_selection import RepeatedKFold
 from utils.evaluate import evaluation_metrics
@@ -17,6 +20,8 @@ def get_model_hyperparams(model_name):
         return lm_params_to_search
     elif model_name == "mlp_network":
         return mlp_params_to_search
+    elif model_name == "elastic_net":
+        return elastic_params_to_search
 
 
 class EncoderFitter(object):
@@ -41,6 +46,9 @@ class EncoderFitter(object):
         elif self.model_name == "mlp_network":
             model_params = fit_mlp_model(model_config, X_train, y_train)
             y_pred = predict_mlp_model(model_params, X_val)
+        elif self.model_name == "elastic_net":
+            model_params = fit_elastic_net(model_config, X_train, y_train)
+            y_pred = predict_elastic_net(model_params, X_val)
         mse, mae, corr = evaluation_metrics(y_val, y_pred)
         return mse, mae, corr
 
@@ -74,4 +82,7 @@ class EncoderFitter(object):
         elif self.model_name == "mlp_network":
             model_params = fit_mlp_model(model_config, self.X, self.y)
             y_pred = predict_mlp_model(model_params, self.X_test)
+        elif self.model_name == "elastic_net":
+            model_params = fit_elastic_net(model_config, self.X, self.y)
+            y_pred = predict_elastic_net(model_params, self.X_test)
         return model_params, y_pred
