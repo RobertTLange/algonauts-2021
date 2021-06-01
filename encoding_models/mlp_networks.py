@@ -56,7 +56,7 @@ def fit_mlp_model(model_config, X, y):
                      train_loader, val_loader,
                      patience=mlp_default_params["early_stop_patience"],
                      log_batch_interval=10)
-    dojo.train(20)
+    dojo.train(mlp_default_params["num_epochs"])
     return network
 
 

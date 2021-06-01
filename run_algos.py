@@ -44,18 +44,22 @@ def main(mle):
             best_layer = layer_id
             best_perf = best_l_score
 
-    # Fit best model on full best layer data, predict on test set + save model!
-    best_config = layer_perf_tracker[best_layer]["config"]
-    X, y, X_test = get_encoding_data(fmri_dir=mle.train_config.fmri_dir,
-                                     activations_dir=activations_dir,
-                                     layer_id=best_layer,
-                                     subject_id=mle.train_config.subject_id,
-                                     roi_type=mle.train_config.roi_type)
-    fitter = EncoderFitter(mle.net_config.encoding_model,
-                           mle.train_config.num_cv_folds,
-                           X, y, X_test)
-    model_params, y_pred = fitter.predict_on_test(best_config)
-    mle.log.save_model(model_params)
+        # After done with BO for layer features - save current best predictions
+        print_framed(f"Save model predictions {layer_id} "
+                     + f"- {mle.train_config.subject_id} "
+                     + f"- {mle.train_config.roi_type}")
+        # Fit best model full best layer data, predict on test set + save model!
+        best_config = layer_perf_tracker[best_layer]["config"]
+        X, y, X_test = get_encoding_data(fmri_dir=mle.train_config.fmri_dir,
+                                         activations_dir=activations_dir,
+                                         layer_id=best_layer,
+                                         subject_id=mle.train_config.subject_id,
+                                         roi_type=mle.train_config.roi_type)
+        fitter = EncoderFitter(mle.net_config.encoding_model,
+                               mle.train_config.num_cv_folds,
+                               X, y, X_test)
+        model_params, y_pred = fitter.predict_on_test(best_config)
+        mle.log.save_model(model_params)
 
     # Store best models predictions and model itself
     pred_fname = (mle.train_config.subject_id + "_" +

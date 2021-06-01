@@ -1,3 +1,8 @@
+- [x] ElasticNet encoding model
+- [ ] Tree encoding model
+- [ ] Non-linear dim reduction
+- [ ] Plot PCA variance captured
+
 ## Important Notes:
 - Need to upload result .pkl as .zip without subdirectories being zipped!
 - Can get detailed results for all regions via `Download output from scoring step`

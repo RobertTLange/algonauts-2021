@@ -1,7 +1,6 @@
-import numpy as np
 from sklearn.linear_model import ElasticNet
 
-# Linear Regression Hyperparameters
+# Elastic Net Regression Hyperparameters
 elastic_params_to_search = {
 "real":
     {"alpha": {"begin": 1e-5, "end": 100, "prior": 'uniform'},
