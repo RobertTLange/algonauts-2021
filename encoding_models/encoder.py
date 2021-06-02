@@ -1,9 +1,9 @@
 from encoding_models.ols import (fit_linear_model,
                                  predict_linear_model,
                                  lm_params_to_search)
-# from encoding_models.trees import (fit_gradboost_model,
-#                                    predict_gradboost_model,
-#                                    gb_params_to_search)
+from encoding_models.trees import (fit_gradboost_model,
+                                   predict_gradboost_model,
+                                   gb_params_to_search)
 from encoding_models.mlp_networks import (fit_mlp_model,
                                           predict_mlp_model,
                                           mlp_params_to_search)
@@ -22,6 +22,8 @@ def get_model_hyperparams(model_name):
         return mlp_params_to_search
     elif model_name == "elastic_net":
         return elastic_params_to_search
+    elif model_name == "gradboost":
+        return gb_params_to_search
 
 
 class EncoderFitter(object):
@@ -49,8 +51,11 @@ class EncoderFitter(object):
         elif self.model_name == "elastic_net":
             model_params = fit_elastic_net(model_config, X_train, y_train)
             y_pred = predict_elastic_net(model_params, X_val)
-        mse, mae, corr = evaluation_metrics(y_val, y_pred)
-        return mse, mae, corr
+        elif self.model_name == "gradboost":
+            model_params = fit_gradboost_model(model_config, X_train, y_train)
+            y_pred = predict_gradboost_model(model_params, X_val)
+        corr, mse, mae = evaluation_metrics(y_val, y_pred)
+        return corr, mse, mae
 
     def cv_fit(self, model_config):
         """ Run cross-validation fitting and evaluation. """
@@ -85,4 +90,7 @@ class EncoderFitter(object):
         elif self.model_name == "elastic_net":
             model_params = fit_elastic_net(model_config, self.X, self.y)
             y_pred = predict_elastic_net(model_params, self.X_test)
+        elif self.model_name == "gradboost":
+            model_params = fit_gradboost_model(model_config, self.X, self.y)
+            y_pred = predict_gradboost_model(model_params, self.X_test)
         return model_params, y_pred

@@ -2,7 +2,7 @@
                   "subject_id": "sub01",
                   # Feature-specific data (NN model)
                   "fmri_dir": "./data/participants_data_v2021",
-                  "feature_model": "resnet50",
+                  "feature_model": "resnext50_32x4d",
                   "feature_layers_to_consider": ["layer_1", "layer_2",
                                                  "layer_3", "layer_4",
                                                  "layer_5"],
