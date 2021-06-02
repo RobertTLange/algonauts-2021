@@ -3,8 +3,8 @@ from sklearn.linear_model import ElasticNet
 # Elastic Net Regression Hyperparameters
 elastic_params_to_search = {
 "real":
-    {"alpha": {"begin": 1e-5, "end": 0.25, "prior": 'uniform'},
-     "l1_ratio": {"begin": 0, "end": 1, "prior": 'uniform'}},
+    {"alpha": {"begin": 0.01, "end": 0.25, "prior": 'uniform'},
+     "l1_ratio": {"begin": 0.01, "end": 1, "prior": 'uniform'}},
 }
 
 

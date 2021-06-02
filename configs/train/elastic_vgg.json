@@ -10,7 +10,7 @@
                   "dim_reduction": 100,
                   # Hyperparameter-specific data (BOpt)
                   "bo_eval_metric": "corr_mean",
-                  "bo_opt_iters": 25,
+                  "bo_opt_iters": 50,
                   "num_cv_folds": 10,
                   "smbo_config": {"base_estimator": "GP",
                                   "acq_func": "gp_hedge",
