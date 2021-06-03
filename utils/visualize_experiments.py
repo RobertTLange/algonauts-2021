@@ -11,7 +11,7 @@ def plot_roi_subject_grid(hyper_log, title="MLP Encoder - Best AlexNet Layer"):
                       plot_title=title,
                       xy_labels=["Region of Interest", "Subject ID"],
                       variable_name="Correlation: fMRI - Encoder",
-                      min_heat=0.04, max_heat=0.3)
+                      min_heat=0.1, max_heat=0.35)
 
 
 def plot_average_scores(hyper_log):
@@ -40,7 +40,7 @@ def plot_average_scores(hyper_log):
 
     # Sort scores for spreadsheet storage
     idx = []
-    for v in ["V1", "V2", "V3", "V4", "LOC", "EBA", "FFA", "STS", "PPA", "WB"]:
+    for v in ["V1", "V2", "V3", "V4", "LOC", "EBA", "FFA", "STS", "PPA"]:
         idx.append(np.where(range_x == v)[0][0])
     return region_sub_mean[idx]
 
@@ -65,7 +65,7 @@ def plot_bo_scores(meta_log, eval_id, subject_id, roi_type,
     ax.spines['right'].set_visible(False)
     ax.set_xlabel("# Fitting Iteration")
     ax.set_ylabel("Correlation")
-    ax.set_ylim(0.1, 0.3)
+    ax.set_ylim(0.1, 0.35)
     ax.set_title(f"Layerwise Bayesian Optimization: {subject_id} - {roi_type}")
     return
 
@@ -98,7 +98,40 @@ def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
                           plot_title=f"{title} {i+1}",
                           xy_labels=["Region of Interest", "Subject ID"],
                           variable_name="Correlation: fMRI - Encoder",
-                          min_heat=0.04, max_heat=0.3,
+                          min_heat=0.04, max_heat=0.35,
                           fig=fig, ax=axs.flatten()[i])
     fig.tight_layout()
+    return
+
+
+def plot_best_layer(hyper_log, meta_log, num_layers=8,
+                    num_bo_per_layer=50,
+                    title="Best VGG Layer per Subject/ROI:"):
+    df = {"subject_id": [], "roi_type": [],
+          "layer_id": [], "best_bo_score": []}
+    for e_t in range(len(hyper_log)):
+        run_id = hyper_log.hyper_log.iloc[e_t].run_id
+        subject_id = hyper_log.hyper_log.iloc[e_t].subject_id
+        roi_type = hyper_log.hyper_log.iloc[e_t].roi_type
+        results = meta_log[run_id].stats.best_bo_score.mean
+        for i in range(num_layers):
+            sub_layer_results = results[i*num_bo_per_layer: num_bo_per_layer + i*num_bo_per_layer]
+            best_score_on_layer = np.max(sub_layer_results)
+            df["subject_id"].append(subject_id)
+            df["roi_type"].append(roi_type)
+            df["layer_id"].append("layer_"+str(i+1))
+            df["best_bo_score"].append(best_score_on_layer)
+
+    layer_df = pd.DataFrame(df)
+    max_layer_idx = layer_df.groupby(['subject_id',
+                                      'roi_type'])['best_bo_score'].transform(max) == df['best_bo_score']
+    max_layer_df = layer_df[max_layer_idx]
+    max_layer_df['best_layer_id'] = [int(l[-1]) for l in max_layer_df.layer_id]
+
+    visualize_2D_grid(max_layer_df,
+                      params_to_plot=["roi_type", "subject_id"],
+                      target_to_plot="best_layer_id",
+                      plot_title=title,
+                      xy_labels=["Region of Interest", "Subject ID"],
+                      variable_name="Layer ID")
     return

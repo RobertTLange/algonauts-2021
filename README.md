@@ -1,5 +1,6 @@
 - [x] ElasticNet encoding model
-- [ ] Tree encoding model
+- [x] Tree encoding model
+- [ ] WB Model with bootstrapped ROI predictions
 - [ ] Non-linear dim reduction
 - [ ] Plot PCA variance captured
 
@@ -19,7 +20,7 @@
 - Single layer vs full feature selection from all?
 - What model fits best for which ROI and subject?
 - How to combine features of different layers/networks?
-- Finetune feature extractor on neural data?
+- Finetune feature extractor on neural data 
 
 ## Data Exploration
 - Heterogeneity across subjects and ROIs
