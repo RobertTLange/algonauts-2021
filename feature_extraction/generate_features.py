@@ -97,7 +97,7 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
     layers = ['layer_' + str(l+1) for l in range(num_layers)]
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    explained_variance = []
+        explained_variance = []
     for layer in tqdm(layers):
         activations_file_list = glob.glob(activations_dir +'/*'+layer+'.npy')
         activations_file_list.sort()
@@ -108,7 +108,7 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
             x[i,:] = temp
         x_train = x[:1000,:]
         x_test = x[1000:]
-        #print(x.shape, x_train.shape, x_test.shape)
+        #print(x.shape, x_train.shape, x_test.shape)S
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
         # Full vs incremental (depending on pca dim and sampling rate)
@@ -179,9 +179,9 @@ if __name__ == "__main__":
                   #'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                   #'efficientnet_b3', 'resnext50_32x4d',
                   #"vone-alexnet",
-                  "vone-resnet50",
-                  "vone-resnet50_at",
-                  "vone-resnet50_ns",
+                  #"vone-resnet50",
+                  #"vone-resnet50_at",
+                  #"vone-resnet50_ns",
                   "vone-cornets"
                   ]
     # Loop over all models, create features from forward passes and reduce dims

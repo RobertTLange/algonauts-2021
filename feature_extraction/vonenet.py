@@ -3,7 +3,8 @@ import torch.nn as nn
 import torchvision
 from vonenet_model import get_model
 
-model_archs = ['alexnet', 'resnet50', 'resnet50_at', 'cornets']
+model_archs = ['alexnet', 'resnet50', 'resnet50_at',
+               'resnet50_ns', 'cornets']
 
 
 def load_vonenet(vonenet_type='resnet50'):
