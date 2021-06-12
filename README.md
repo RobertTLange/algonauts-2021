@@ -20,7 +20,7 @@
 - Single layer vs full feature selection from all?
 - What model fits best for which ROI and subject?
 - How to combine features of different layers/networks?
-- Finetune feature extractor on neural data 
+- Finetune feature extractor on neural data
 
 ## Data Exploration
 - Heterogeneity across subjects and ROIs
@@ -47,3 +47,4 @@
 - Teapot evo algo: http://epistasislab.github.io/tpot/
 - Torchvision models: https://pytorch.org/vision/stable/models.html
 - Alexnet torch vision: https://pytorch.org/vision/stable/_modules/torchvision/models/alexnet.html#alexnet
+- Orthogonal Matching Pursuit: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.OrthogonalMatchingPursuit.html

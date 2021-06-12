@@ -42,7 +42,7 @@ param_search_args:
 single_job_args:
     job_name: "algo"
     num_gpus: 0
-    num_logical_cores: 8
+    num_logical_cores: 4
     log_file: "log"
     err_file: "err"
     env_name: "algonauts"

@@ -19,7 +19,7 @@ mlp_params_to_search = {
 
 mlp_default_params = {"batch_size": 32,
                       "num_epochs": 20,
-                      "torch_num_threads": 5,
+                      "torch_num_threads": 7,
                       "early_stop_patience": 7,
                       "early_stop_val_split": 0.1}
 

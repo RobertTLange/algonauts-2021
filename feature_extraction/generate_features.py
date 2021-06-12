@@ -15,6 +15,7 @@ from alexnet import load_alexnet
 from vgg import load_vgg
 from resnet import load_resnet
 from timm_models import load_timm
+from vonenet import load_vonenet
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -36,13 +37,24 @@ def get_video_from_mp4(file, sampling_rate):
 
 
 def get_activations_and_save(model, video_list, activations_dir,
-                             sampling_rate = 4):
+                             model_type, sampling_rate=4):
     """ how many frames to skip when feeding into the network. """
-    centre_crop = trn.Compose([
-            trn.ToPILImage(),
-            trn.Resize((224,224)),
-            trn.ToTensor(),
-            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+    if model_type in ["vone-alexnet", "vone-resnet50",
+                      "vone-resnet50_at", "vone-resnet50_ns",
+                      "vone-cornets"]:
+        centre_crop = trn.Compose([
+                trn.ToPILImage(),
+                trn.Resize((224,224)),
+                trn.ToTensor(),
+                trn.Normalize([0.5, 0.5, 0.5],
+                              [0.5, 0.5, 0.5])])
+    else:
+        centre_crop = trn.Compose([
+                trn.ToPILImage(),
+                trn.Resize((224,224)),
+                trn.ToTensor(),
+                trn.Normalize([0.485, 0.456, 0.406],
+                              [0.229, 0.224, 0.225])])
 
     for video_file in tqdm(video_list):
         vid,num_frames = get_video_from_mp4(video_file, sampling_rate)
@@ -52,10 +64,23 @@ def get_activations_and_save(model, video_list, activations_dir,
             img =  vid[0,frame,:,:,:]
             input_img = V(centre_crop(img).unsqueeze(0))
             if torch.cuda.is_available():
-                input_img=input_img.cuda()
-            x = model.forward(input_img)
+                input_img = input_img.cuda()
+
+            if model_type in ["vone-alexnet", "vone-resnet50",
+                              "vone-resnet50_at", "vone-resnet50_ns",
+                              "vone-cornets"]:
+                x = []
+                for layer in model:
+                    input_img = layer(input_img)
+                    if type(input_img) == tuple:
+                        x.extend(input_img)
+                    else:
+                        x.append(input_img)
+            else:
+                x = model.forward(input_img)
+
             for i, feat in enumerate(x):
-                if frame==0:
+                if frame == 0:
                     activations.append(feat.data.cpu().numpy().ravel())
                 else:
                     activations[i] =  activations[i] + feat.data.cpu().numpy().ravel()
@@ -72,6 +97,7 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
     layers = ['layer_' + str(l+1) for l in range(num_layers)]
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
+    explained_variance = []
     for layer in tqdm(layers):
         activations_file_list = glob.glob(activations_dir +'/*'+layer+'.npy')
         activations_file_list.sort()
@@ -90,7 +116,7 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
         pca.fit(x_train)
         #print(pca.explained_variance_)
         #print(pca.explained_variance_ratio_)
-        print(pca.explained_variance_ratio_.cumsum()[-1])
+        explained_variance.append(pca.explained_variance_ratio_.cumsum()[-1])
 
         x_train = pca.transform(x_train)
         x_test = pca.transform(x_test)
@@ -99,6 +125,8 @@ def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
         test_save_path = os.path.join(save_dir, "test_" + layer)
         np.save(train_save_path, x_train)
         np.save(test_save_path, x_test)
+    pca_var_path = os.path.join(save_dir, "pca_variance")
+    np.save(pca_var_path, np.array(explained_variance))
 
 
 def main(model_type, pca_dims, save_dir, video_dir):
@@ -116,6 +144,13 @@ def main(model_type, pca_dims, save_dir, video_dir):
         model = load_resnet(model_type)
     elif model_type == "vgg":
         model = load_vgg()
+    elif model_type in ["vone-alexnet",
+                        "vone-resnet50",
+                        "vone-resnet50_at",
+                        "vone-resnet50_ns",
+                        "vone-cornets"]:
+        model_name = model_type.split("-")[1]
+        model = load_vonenet(model_name)
     else:
         model = load_timm(model_type)
     print(f'{model_type} Model loaded')
@@ -125,7 +160,8 @@ def main(model_type, pca_dims, save_dir, video_dir):
     if not os.path.exists(activations_dir):
         os.makedirs(activations_dir)
     print("-------------Saving activations ----------------------------")
-    num_layers = get_activations_and_save(model, video_list, activations_dir)
+    num_layers = get_activations_and_save(model, video_list, activations_dir,
+                                          model_type)
 
     # preprocessing using PCA and save
     for num_pca_dims in pca_dims:
@@ -141,7 +177,12 @@ if __name__ == "__main__":
                   #'alexnet',
                   #'vgg',
                   #'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-                  #'efficientnet_b3', 'resnext50_32x4d'
+                  #'efficientnet_b3', 'resnext50_32x4d',
+                  #"vone-alexnet",
+                  "vone-resnet50",
+                  "vone-resnet50_at",
+                  "vone-resnet50_ns",
+                  "vone-cornets"
                   ]
     # Loop over all models, create features from forward passes and reduce dims
     for model_type in all_models:
