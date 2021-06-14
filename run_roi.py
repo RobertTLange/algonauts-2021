@@ -6,7 +6,7 @@ from bayes_opt_search import get_hyperspace, run_bayes_opt
 from encoding_models import EncoderFitter, get_model_hyperparams
 
 
-def main(mle):
+def main(mle: MLExperiment):
     """ Load data, Bayes opt + CV on model params, Final subm prediction """
     # Set directory for all stored model features to train on
     activations_dir = ('./data/features/' +
