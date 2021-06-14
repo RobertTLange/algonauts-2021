@@ -83,14 +83,23 @@ class EncoderFitter(object):
         """ Fit model on entire data and return predictions on test. """
         if self.model_name == "linear_regression":
             model_params = fit_linear_model(model_config, self.X, self.y)
-            y_pred = predict_linear_model(model_params, self.X_test)
         elif self.model_name == "mlp_network":
             model_params = fit_mlp_model(model_config, self.X, self.y)
-            y_pred = predict_mlp_model(model_params, self.X_test)
         elif self.model_name == "elastic_net":
             model_params = fit_elastic_net(model_config, self.X, self.y)
-            y_pred = predict_elastic_net(model_params, self.X_test)
         elif self.model_name == "gradboost":
             model_params = fit_gradboost_model(model_config, self.X, self.y)
-            y_pred = predict_gradboost_model(model_params, self.X_test)
+        y_pred = self.predict(model_params, self.X_test)
         return model_params, y_pred
+
+    def predict(self, model_params, X):
+        """ Predict using model config. """
+        if self.model_name == "linear_regression":
+            y_pred = predict_linear_model(model_params, X)
+        elif self.model_name == "mlp_network":
+            y_pred = predict_mlp_model(model_params, X)
+        elif self.model_name == "elastic_net":
+            y_pred = predict_elastic_net(model_params, X)
+        elif self.model_name == "gradboost":
+            y_pred = predict_gradboost_model(model_params, X)
+        return y_pred

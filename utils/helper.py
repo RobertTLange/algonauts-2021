@@ -2,6 +2,18 @@ import os
 import pickle
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+import json
+from dotmap import DotMap
+import zipfile
+
+
+def get_best_roi_models(json_path, prepend=None):
+    with open(json_path) as json_file:
+        expert_ckpt = DotMap(json.load(json_file))
+    if prepend is not None:
+        for k in expert_ckpt.keys():
+            expert_ckpt[k]["path"] = os.path.join(prepend, expert_ckpt[k]["path"])
+    return expert_ckpt
 
 
 def save_dict(di_, filename_):
@@ -65,3 +77,16 @@ def get_fmri(fmri_dir, subject_id, roi_type, mean=True):
     else:
         ROI_data_train = ROI_data["train"]
     return ROI_data_train
+
+
+def zip(src, dst):
+    ''' Zip Submission Results'''
+    zf = zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED)
+    abs_src = os.path.abspath(src)
+    for dirname, subdirs, files in os.walk(src):
+        for filename in files:
+            absname = os.path.abspath(os.path.join(dirname, filename))
+            arcname = absname[len(abs_src) + 1:]
+            if arcname in ["mini_track.pkl", "full_track.pkl"]:
+                zf.write(absname, arcname)
+    zf.close()

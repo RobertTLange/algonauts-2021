@@ -7,7 +7,7 @@
                                                  "layer_3", "layer_4",
                                                  "layer_5", "layer_6",
                                                  "layer_7", "layer_8"],
-                  "dim_reduction": 100,
+                  "dim_reduction": 250,
                   # Hyperparameter-specific data (BOpt)
                   "bo_eval_metric": "corr_mean",
                   "bo_opt_iters": 30,
