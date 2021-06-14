@@ -7,14 +7,14 @@
        "model": "elastic_net"},
 "V4": {"path": "experiments/roi/elastic_resnet50_bo_50",
        "model": "elastic_net"},
-"LOC": {"path": "experiments/mlp_vgg_bo_30",
-       "model": "mlp_network"},
+"LOC": {"path": "experiments/roi/mlp_efficientnet_b3_bo_50",
+        "model": "mlp_network"},
 "EBA": {"path": "experiments/roi/mlp_efficientnet_b3_bo_50",
-       "model": "elastic_net"},
+        "model": "mlp_network"},
 "FFA": {"path": "experiments/roi/mlp_efficientnet_b3_bo_50",
-       "model": "elastic_net"},
+        "model": "mlp_network"},
 "STS": {"path": "experiments/roi/mlp_efficientnet_b3_bo_50",
-       "model": "elastic_net"},
+        "model": "mlp_network"},
 "PPA": {"path":"experiments/roi/elastic_vone_resnet50_bo_50",
-       "model": "elastic_net"}
+        "model": "elastic_net"}
  }

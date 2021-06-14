@@ -24,9 +24,8 @@ mlp_default_params = {"batch_size": 32,
                       "early_stop_val_split": 0.1}
 
 
-def fit_mlp_model(model_config, X, y):
-    """ Build and train MLP Encoder with early stopping. """
-    # Build model config based on proposed model_config
+def build_network(model_config, X, y):
+    """ Build model config based on proposed model_config. """
     core_layers = (int(model_config["num_hidden_layers"])
                    *[["linear", int(model_config["num_hidden_units"]), True]])
     layers_info = [["flatten"],
@@ -40,7 +39,15 @@ def fit_mlp_model(model_config, X, y):
                   "batch_norm": False}
 
     # Create model, optimizer and criterion
-    network = BodyBuilder(**net_config)
+    network =  BodyBuilder(**net_config)
+    network.eval()
+    return network
+
+
+def fit_mlp_model(model_config, X, y):
+    """ Build and train MLP Encoder with early stopping. """
+    # Create model, optimizer and criterion
+    network = build_network(model_config, X, y)
     optimizer = set_optimizer(network,
                               model_config["optimizer_class"],
                               model_config["learning_rate"],
