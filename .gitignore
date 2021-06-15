@@ -1,6 +1,7 @@
 data/
 features/
-
+imagenet_val/
+*.JPG
 *.gif
 *.zip
 mle_config.toml
