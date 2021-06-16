@@ -1,13 +1,13 @@
 import os
 import glob
 from tqdm import tqdm
-
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA, IncrementalPCA
+from fit_pca import fit_trafo_pca
+from fit_umap import fit_trafo_umap
+from fit_vae import fit_trafo_vae
 
 
-def do_dim_reduction_and_save(activations_dir, save_dir, num_pca_dims):
+def do_dim_reduction_and_save(activations_dir, save_dir, dim_red_params):
     onlyfiles = [f for f in os.listdir(activations_dir)
                  if os.path.isfile(os.path.join(activations_dir, f))]
     num_layers = int(len(onlyfiles)/1102)
@@ -29,32 +29,34 @@ def do_dim_reduction_and_save(activations_dir, save_dir, num_pca_dims):
         #print(x.shape, x_train.shape, x_test.shape)S
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
-        print(x_train.shape)
-        # TODO: General fitting of dimensionality reduction technique
-        # Full vs incremental (depending on pca dim and sampling rate)
-        pca = PCA(n_components=num_pca_dims)#, batch_size=20)
-        pca.fit(x_train)
-        #explained_variance.append(pca.explained_variance_ratio_.cumsum()[-1])
 
-        x_train = pca.transform(x_train)
-        x_test = pca.transform(x_test)
+        # TODO: General fitting of dimensionality reduction technique
+        x_train_trafo, x_test_trafo = fit_trafo_pca(x_train, x_test,
+                                                    dim_red_params)
+        print(x_train.shape, x_train_trafo.shape)
         #print(x.shape, x_train.shape, x_test.shape)
         train_save_path = os.path.join(save_dir, "train_" + layer)
         test_save_path = os.path.join(save_dir, "test_" + layer)
-        np.save(train_save_path, x_train)
-        np.save(test_save_path, x_test)
-    pca_var_path = os.path.join(save_dir, "pca_variance")
-    np.save(pca_var_path, np.array(explained_variance))
+        np.save(train_save_path, x_train_trafo)
+        np.save(test_save_path, x_test_trafo)
+    # pca_var_path = os.path.join(save_dir, "pca_variance")
+    # np.save(pca_var_path, np.array(explained_variance))
 
 
 def run_compression(save_dir):
     pca_dims = [100, 250, 500]
+    umap_params ={"n_neighbors": 15,
+                  "min_dist": 0.1,
+                  "n_components": 2,
+                  "metric":'euclidean'}
     activations_dir = os.path.join(save_dir, "activations")
     # preprocessing using PCA and save
     for num_pca_dims in pca_dims:
         pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
         print(f"------performing  PCA: {num_pca_dims}---------")
-        do_dim_reduction_and_save(activations_dir, pca_dir, num_pca_dims)
+        dim_red_params = {"n_components": num_pca_dims}
+        do_dim_reduction_and_save(activations_dir, pca_dir,
+                                  dim_red_params)
 
 
 if __name__ == "__main__":
@@ -74,7 +76,6 @@ if __name__ == "__main__":
                   ]
 
     # Loop over all models, create features from forward passes and reduce dims
-    pca_dims = [100, 250, 500]
     for model_type in all_models:
         save_dir = f'../data/features/{model_type}'
         run_compression(save_dir)
