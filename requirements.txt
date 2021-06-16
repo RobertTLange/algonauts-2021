@@ -8,3 +8,4 @@ scikit-optimize
 jax
 jaxlib
 opencv-python
+umap-learn

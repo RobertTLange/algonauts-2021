@@ -8,8 +8,6 @@ import cv2
 import torch
 from torch.autograd import Variable as V
 from torchvision import transforms as trn
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA, IncrementalPCA
 
 from alexnet import load_alexnet
 from vgg import load_vgg
@@ -93,44 +91,7 @@ def get_activations_and_save(model, video_list, activations_dir,
     return len(activations)
 
 
-def do_PCA_and_save(activations_dir, save_dir, num_layers, num_pca_dims):
-    # TODO: Layerwise vs aggregated PCA
-    layers = ['layer_' + str(l+1) for l in range(num_layers)]
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-        explained_variance = []
-    for layer in tqdm(layers):
-        activations_file_list = glob.glob(activations_dir +'/*'+layer+'.npy')
-        activations_file_list.sort()
-        feature_dim = np.load(activations_file_list[0]).shape[0]
-        x = np.zeros((len(activations_file_list),feature_dim))
-        for i, activation_file in enumerate(activations_file_list):
-            temp = np.load(activation_file)
-            x[i,:] = temp
-        x_train = x[:1000,:]
-        x_test = x[1000:]
-        #print(x.shape, x_train.shape, x_test.shape)S
-        x_test = StandardScaler().fit_transform(x_test)
-        x_train = StandardScaler().fit_transform(x_train)
-        # Full vs incremental (depending on pca dim and sampling rate)
-        pca = PCA(n_components=num_pca_dims)#, batch_size=20)
-        pca.fit(x_train)
-        #print(pca.explained_variance_)
-        #print(pca.explained_variance_ratio_)
-        explained_variance.append(pca.explained_variance_ratio_.cumsum()[-1])
-
-        x_train = pca.transform(x_train)
-        x_test = pca.transform(x_test)
-        #print(x.shape, x_train.shape, x_test.shape)
-        train_save_path = os.path.join(save_dir, "train_" + layer)
-        test_save_path = os.path.join(save_dir, "test_" + layer)
-        np.save(train_save_path, x_train)
-        np.save(test_save_path, x_test)
-    pca_var_path = os.path.join(save_dir, "pca_variance")
-    np.save(pca_var_path, np.array(explained_variance))
-
-
-def main(model_type, pca_dims, save_dir, video_dir):
+def run_activation_features(model_type, save_dir, video_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     video_list = glob.glob(video_dir + '/*.mp4')
@@ -158,9 +119,9 @@ def main(model_type, pca_dims, save_dir, video_dir):
                         'simclr_r50_2x_sk1_100pct',
                         'simclr_r50_2x_sk1_10pct',
                         'simclr_r50_2x_sk1_1pct',
-                        'simclr_r150_3x_sk1_100pct',
-                        'simclr_r150_3x_sk1_10pct',
-                        'simclr_r150_3x_sk1_1pct']:
+                        'simclr_r152_3x_sk1_100pct',
+                        'simclr_r152_3x_sk1_10pct',
+                        'simclr_r152_3x_sk1_1pct']:
         model = load_simclr_v2(model_type)
     else:
         model = load_timm(model_type)
@@ -174,16 +135,10 @@ def main(model_type, pca_dims, save_dir, video_dir):
     num_layers = get_activations_and_save(model, video_list, activations_dir,
                                           model_type)
 
-    # preprocessing using PCA and save
-    for num_pca_dims in pca_dims:
-        pca_dir = os.path.join(save_dir, f'pca_{num_pca_dims}')
-        print(f"------performing  PCA: {num_pca_dims}---------")
-        do_PCA_and_save(activations_dir, pca_dir, num_layers, num_pca_dims)
 
 
 if __name__ == "__main__":
     video_dir = './data/AlgonautsVideos268_All_30fpsmax/'
-    pca_dims = [50, 100, 250, 500]
     all_models = [
                   #'alexnet',
                   #'vgg',
@@ -196,9 +151,10 @@ if __name__ == "__main__":
                   #"vone-cornets",
                   'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
                   'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
-                  'simclr_r150_3x_sk1_100pct', 'simclr_r150_3x_sk1_10pct', 'simclr_r150_3x_sk1_1pct'
+                  # 'simclr_r152_3x_sk1_100pct', 'simclr_r152_3x_sk1_10pct', 'simclr_r152_3x_sk1_1pct'
                   ]
+
     # Loop over all models, create features from forward passes and reduce dims
     for model_type in all_models:
         save_dir = f'./data/features/{model_type}'
-        main(model_type, pca_dims, save_dir, video_dir)
+        run_activation_features(model_type, save_dir, video_dir)

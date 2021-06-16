@@ -3,8 +3,8 @@ meta_job_args:
     project_name: "algo"
     job_type: "hyperparameter-search"
     base_train_fname: "run_roi.py"
-    base_train_config: "configs/train/elastic_vgg.json"
-    experiment_dir: "experiments/roi/elastic_vgg_bo_25/"
+    base_train_config: "configs/train/pls_resnet50.json"
+    experiment_dir: "experiments/roi/pls_resnet50_bo_25/"
 
 # Parameters specific to the hyperparameter search
 param_search_args:
@@ -55,6 +55,3 @@ single_job_args:
     err_file: "err"
     env_name: "algonauts"
     time_per_job: "05:00:00"
-    exclude_nodes:
-        - "cognition15"
-        - "cognition16"

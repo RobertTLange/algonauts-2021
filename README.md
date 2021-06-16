@@ -1,8 +1,48 @@
-- [x] ElasticNet encoding model
-- [x] Tree encoding model
-- [ ] WB Model with bootstrapped ROI predictions
-- [ ] Non-linear dim reduction
-- [ ] Plot PCA variance captured
+# Experiments to Run
+
+- [ ] ResNet50 PCA-250 Partial LS 20 BO Iters
+
+- [ ] Fix Partial LS + ResNet50
+    - Different dim reduction techniques
+        - PCA-100
+        - PCA-250
+        - PCA-500
+        - UMAP-100
+        - UMAP-250
+        - UMAP-500
+        - VAE-100
+        - VAE-250
+        - VAE-500
+
+- [ ] Fix <Dim Reduction> + Partial LS
+    - Different feature gen architectures
+        - AlexNet
+        - VGG-19
+        - Resnet18
+        - Resnet34
+        - Resnet50
+        - Resnet101
+        - Resnet152
+        - Efficientnet-b3
+
+- [ ] Fix <Dim Reduction> + <Feature Architecture>
+    - Different encoding models
+        - OLS
+        - Partial LS
+        - Elastic Net
+        - Residual MLP
+        - GradientTreeRegressor
+
+- [ ] VOne Networks
+    - VOne-AlexNet
+    - VOne-ResNet
+    - VOne-ResNet-AT
+    - VOne-ResNet-RS
+    - VOne-CornetS
+
+- [ ] 9 SimCLR-v2 Networks
+
+- [ ] ImageNet Validation Scores
 
 ## Important Notes:
 - Need to upload result .pkl as .zip without subdirectories being zipped!
