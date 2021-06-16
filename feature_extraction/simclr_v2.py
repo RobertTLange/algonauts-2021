@@ -15,7 +15,6 @@ model_cktp = {
 }
 
 
-
 def load_simclr_v2(simclr_type):
     assert simclr_type in model_cktp.keys()
     model, _ = get_simclr_resnet(*name_to_params(model_cktp[simclr_type]))

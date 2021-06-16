@@ -86,8 +86,12 @@ if __name__ == "__main__":
     all_models = [
                   'alexnet', 'vgg',
                   'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-                  'efficientnet_b3', 'resnext50_32x4d',
+                  #'efficientnet_b3',
+                  'resnext50_32x4d',
                   'vone-alexnet', 'vone-resnet50', 'vone-resnet50_at', 'vone-resnet50_ns', 'vone-cornets'
+                  'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
+                  'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
+                  'simclr_r150_3x_sk1_100pct', 'simclr_r150_3x_sk1_10pct', 'simclr_r150_3x_sk1_1pct'
                   ]
     all_records = []
     for model_type in all_models:
