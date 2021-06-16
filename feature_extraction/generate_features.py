@@ -16,6 +16,7 @@ from vgg import load_vgg
 from resnet import load_resnet
 from timm_models import load_timm
 from vonenet import load_vonenet
+from simclr_v2 import load_simclr_v2
 
 
 def get_video_from_mp4(file, sampling_rate):
@@ -151,6 +152,16 @@ def main(model_type, pca_dims, save_dir, video_dir):
                         "vone-cornets"]:
         model_name = model_type.split("-")[1]
         model = load_vonenet(model_name)
+    elif model_type in ['simclr_r50_1x_sk0_100pct',
+                        'simclr_r50_1x_sk0_10pct',
+                        'simclr_r50_1x_sk0_1pct',
+                        'simclr_r50_2x_sk1_100pct',
+                        'simclr_r50_2x_sk1_10pct',
+                        'simclr_r50_2x_sk1_1pct',
+                        'simclr_r150_3x_sk1_100pct',
+                        'simclr_r150_3x_sk1_10pct',
+                        'simclr_r150_3x_sk1_1pct']:
+        model = load_simclr_v2(model_type)
     else:
         model = load_timm(model_type)
     print(f'{model_type} Model loaded')
@@ -172,7 +183,7 @@ def main(model_type, pca_dims, save_dir, video_dir):
 
 if __name__ == "__main__":
     video_dir = './data/AlgonautsVideos268_All_30fpsmax/'
-    pca_dims = [50, 100, 250, 500, 1000]
+    pca_dims = [50, 100, 250, 500]
     all_models = [
                   #'alexnet',
                   #'vgg',
@@ -182,7 +193,10 @@ if __name__ == "__main__":
                   #"vone-resnet50",
                   #"vone-resnet50_at",
                   #"vone-resnet50_ns",
-                  "vone-cornets"
+                  #"vone-cornets",
+                  'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
+                  'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
+                  'simclr_r150_3x_sk1_100pct', 'simclr_r150_3x_sk1_10pct', 'simclr_r150_3x_sk1_1pct'
                   ]
     # Loop over all models, create features from forward passes and reduce dims
     for model_type in all_models:

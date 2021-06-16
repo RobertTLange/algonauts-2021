@@ -1,7 +1,13 @@
 import torch
 import torch.nn as nn
 import torchvision
-import os
+import os, tqdm, time
+
+from alexnet import load_alexnet
+from vgg import load_vgg
+from resnet import load_resnet
+from timm_models import load_timm
+from vonenet import load_vonenet
 
 
 class ImageNetVal(object):
@@ -10,10 +16,10 @@ class ImageNetVal(object):
         self.model = model
         self.model_type = model_type
         self.device = device
-        self.data_loader = self.data()
         self.loss = nn.CrossEntropyLoss(size_average=False)
         self.loss = self.loss.to(self.device)
-        self.imagenet_val_path = "imagenet_val"
+        self.imagenet_val_path = "imagenet_val/"
+        self.data_loader = self.data()
 
     def data(self):
         if model_type in ["vone-alexnet",
@@ -34,7 +40,7 @@ class ImageNetVal(object):
                 torchvision.transforms.Resize(256),
                 torchvision.transforms.CenterCrop(224),
                 torchvision.transforms.ToTensor(),
-                normalization_transform,
+                norm_transform,
             ]))
         data_loader = torch.utils.data.DataLoader(dataset,
                                                   batch_size=128,
@@ -51,16 +57,18 @@ class ImageNetVal(object):
         with torch.no_grad():
             for (inp, target) in tqdm.tqdm(self.data_loader, desc=self.name):
                 target = target.to(self.device)
+                inp = inp.to(self.device)
                 output = self.model(inp)
 
-                record['loss'] += self.loss(output, target).item()
-                p1, p5 = accuracy(output, target, topk=(1, 5))
+                record['loss'] += self.loss(output[-1], target).item()
+                p1, p5 = accuracy(output[-1], target, topk=(1, 5))
                 record['top1'] += p1
                 record['top5'] += p5
 
         for key in record:
             record[key] /= len(self.data_loader.dataset.samples)
         record['dur'] = (time.time() - start) / len(self.data_loader)
+        record['model_type'] = self.model_type
         print(record)
         return record
 
@@ -76,41 +84,40 @@ def accuracy(output, target, topk=(1,)):
 
 if __name__ == "__main__":
     all_models = [
-                  'alexnet',
-                  'vgg',
+                  'alexnet', 'vgg',
                   'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                   'efficientnet_b3', 'resnext50_32x4d',
-                  "vone-alexnet",
-                  "vone-resnet50",
-                  "vone-resnet50_at",
-                  "vone-resnet50_ns",
-                  "vone-cornets"
+                  'vone-alexnet', 'vone-resnet50', 'vone-resnet50_at', 'vone-resnet50_ns', 'vone-cornets'
                   ]
+    all_records = []
+    for model_type in all_models:
+        print("===============================================================")
+        print(model_type)
+        if model_type == "alexnet":
+            model = load_alexnet()
+        elif model_type in ['resnet18', 'resnet34', 'resnet50',
+                            'resnet101', 'resnet152']:
+            model = load_resnet(model_type)
+        elif model_type == "vgg":
+            model = load_vgg()
+        elif model_type in ["vone-alexnet",
+                            "vone-resnet50",
+                            "vone-resnet50_at",
+                            "vone-resnet50_ns",
+                            "vone-cornets"]:
+            model_name = model_type.split("-")[1]
+            model = load_vonenet(model_name)
+        else:
+            model = load_timm(model_type)
 
-    model_type = "vone-resnet50"
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
+        validator = ImageNetVal(model, model_type, device)
+        record = validator()
+        all_records.append(record)
 
-    if model_type == "alexnet":
-        model = load_alexnet()
-    elif model_type in ['resnet18', 'resnet34', 'resnet50',
-                        'resnet101', 'resnet152']:
-        model = load_resnet(model_type)
-    elif model_type == "vgg":
-        model = load_vgg()
-    elif model_type in ["vone-alexnet",
-                        "vone-resnet50",
-                        "vone-resnet50_at",
-                        "vone-resnet50_ns",
-                        "vone-cornets"]:
-        model_name = model_type.split("-")[1]
-        model = load_vonenet(model_name)
-    else:
-        model = load_timm(model_type)
-
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
-    validator = ImageNetVal(model, model_type, device)
-    record = validator()
-    print(record['top1'])
-    print(record['top5'])
+    import pandas as pd
+    df = pd.DataFrame(all_records)
+    df.to_csv("imagenet_val_scores.csv")

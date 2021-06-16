@@ -124,10 +124,19 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(channels_in, 1000)
 
     def forward(self, x, apply_fc=False):
-        h = self.net(x).mean(dim=[2, 3])
-        if apply_fc:
-            h = self.fc(h)
-        return h
+        all_features = []
+        for l in self.net:
+            x = l(x)
+            all_features.append(x)
+        h = x.mean(dim=[2, 3])
+        all_features.append(h)
+        h_out = self.fc(h)
+        all_features.append(h_out)
+        return all_features
+        # h = self.net(x).mean(dim=[2, 3])
+        # if apply_fc:
+        #     h = self.fc(h)
+        # return h
 
 
 class ContrastiveHead(nn.Module):
@@ -153,7 +162,7 @@ class ContrastiveHead(nn.Module):
         return x
 
 
-def get_resnet(depth=50, width_multiplier=1, sk_ratio=0):  # sk_ratio=0.0625 is recommended
+def get_simclr_resnet(depth=50, width_multiplier=1, sk_ratio=0):  # sk_ratio=0.0625 is recommended
     layers = {50: [3, 4, 6, 3],
               101: [3, 4, 23, 3],
               152: [3, 8, 36, 3],

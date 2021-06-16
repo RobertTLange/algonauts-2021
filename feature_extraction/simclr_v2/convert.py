@@ -1,27 +1,21 @@
-import argparse
-
 import torch
 import numpy as np
 import torch.nn as nn
 import tensorflow as tf
-
-from resnet import get_resnet, name_to_params
-
-parser = argparse.ArgumentParser(description='SimCLR converter')
-parser.add_argument('tf_path', type=str, help='path of the input tensorflow file (ex: model.ckpt-250228)')
-parser.add_argument('--ema', action='store_true')
-parser.add_argument('--supervised', action='store_true')
-args = parser.parse_args()
+import os
+from resnet import get_simclr_resnet, name_to_params
 
 
-def main():
-    use_ema_model = args.ema
+
+def convert(model, category, use_ema_model, supervised):
+    tf_path = os.path.join("models", model, category)
     prefix = ('ema_model/' if use_ema_model else '') + 'base_model/'
     head_prefix = ('ema_model/' if use_ema_model else '') + 'head_contrastive/'
+
     # 1. read tensorflow weight into a python dict
     vars_list = []
     contrastive_vars = []
-    for v in tf.train.list_variables(args.tf_path):
+    for v in tf.train.list_variables(tf_path):
         if v[0].startswith(prefix) and not v[0].endswith('/Momentum'):
             vars_list.append(v[0])
         elif v[0] in {'head_supervised/linear_layer/dense/bias', 'head_supervised/linear_layer/dense/kernel'}:
@@ -30,11 +24,12 @@ def main():
             contrastive_vars.append(v[0])
 
     sd = {}
-    ckpt_reader = tf.train.load_checkpoint(args.tf_path)
+    ckpt_reader = tf.train.load_checkpoint(tf_path)
     for v in vars_list:
         sd[v] = ckpt_reader.get_tensor(v)
 
     split_idx = 2 if use_ema_model else 1
+
     # 2. convert the state_dict to PyTorch format
     conv_keys = [k for k in sd.keys() if k.split('/')[split_idx].split('_')[0] == 'conv2d']
     conv_idx = []
@@ -58,8 +53,8 @@ def main():
     arg_idx = np.argsort(bn_idx)
     bn_keys = [bn_keys[idx] for idx in arg_idx]
 
-    depth, width, sk_ratio = name_to_params(args.tf_path)
-    model, head = get_resnet(depth, width, sk_ratio)
+    depth, width, sk_ratio = name_to_params(tf_path)
+    model, head = get_simclr_resnet(depth, width, sk_ratio)
 
     conv_op = []
     bn_op = []
@@ -92,7 +87,7 @@ def main():
     assert model.fc.bias.shape == b.shape
     model.fc.bias.data = b
 
-    if args.supervised:
+    if supervised:
         save_location = f'r{depth}_{width}x_sk{1 if sk_ratio != 0 else 0}{"_ema" if use_ema_model else ""}.pth'
         torch.save({'resnet': model.state_dict(), 'head': head.state_dict()}, save_location)
         return
@@ -116,10 +111,19 @@ def main():
         m.running_var = torch.from_numpy(sd[f'{common_prefix}moving_variance'])
 
     # 3. dump the PyTorch weights.
-    save_location = f'r{depth}_{width}x_sk{1 if sk_ratio != 0 else 0}{"_ema" if use_ema_model else ""}.pth'
-    torch.save({'resnet': model.state_dict(), 'head': head.state_dict()}, save_location)
+    save_location = (f'r{depth}_{width}x_sk{1 if sk_ratio != 0 else 0}'
+                     + f'_{category}'
+                     + f'{"_ema" if use_ema_model else ""}.pth')
+    os.makedirs("torch_ckpt", exist_ok=True)
+    print(os.path.join("torch_ckpt", save_location))
+    torch.save({'resnet': model.state_dict(), 'head': head.state_dict()},
+               os.path.join("torch_ckpt", save_location))
 
 
 if __name__ == '__main__':
-    main()
+    all_simclr_models = ['r50_1x_sk0', 'r50_2x_sk1', 'r152_3x_sk1']
+    all_categories = ['finetuned_100pct', 'finetuned_10pct', 'finetuned_1pct']
+    for m in all_simclr_models:
+        for c in all_categories:
+            convert(m, c, use_ema_model=False, supervised=False)
     #python convert.py r50_1x_sk0/model.ckpt-37535
