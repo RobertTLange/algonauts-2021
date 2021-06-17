@@ -1,17 +1,50 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from mle_toolbox.visualize import visualize_2D_grid
+from mle_toolbox.visualize import visualize_2D_grid, plot_2D_heatmap
 
 
-def plot_roi_subject_grid(hyper_log, title="MLP Encoder - Best AlexNet Layer"):
-    visualize_2D_grid(hyper_log,
-                      params_to_plot=["roi_type", "subject_id"],
-                      target_to_plot="best_bo_score",
-                      plot_title=title,
-                      xy_labels=["Region of Interest", "Subject ID"],
-                      variable_name="Correlation: fMRI - Encoder",
-                      min_heat=0.1, max_heat=0.35)
+def plot_roi_subject_grid(hyper_log, title="MLP Encoder - Best AlexNet Layer",
+                          min_heat=0.05, max_heat=0.3):
+    heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
+                                  params_to_plot=["roi_type", "subject_id"],
+                                  target_to_plot="best_bo_score",
+                                  return_array=True)
+    fig, ax = plot_2D_heatmap(range_x, range_y, heat_array,
+                              title=title,
+                              xy_labels=["Region of Interest", "Subject ID"],
+                              variable_name="Correlation: fMRI - Encoder",
+                              max_heat=max_heat, min_heat=min_heat)
+
+
+def normalize_scores(heat_array):
+    norm_matrix = np.array([[162, 69, 1034, 165, 120, 238, 249, 188, 60], #sub10
+                            [191, 76, 1515, 262, 346, 271, 265, 245, 94],
+                            [55, 163, 1244,	150, 306, 300, 238,	223, 85],
+                            [101, 89, 1117, 33, 80, 195, 189, 174, 55],
+                            [308, 119, 1356, 216, 173, 286, 281, 229, 108],
+                            [309, 69, 1397, 210, 219, 326, 196, 176, 73],
+                            [368, 210, 1153, 225, 398, 176, 209, 212, 117],
+                            [376, 80, 1237, 368, 278, 164, 271, 270, 111],
+                            [183, 157, 1348, 153, 421, 285, 231, 270, 95],
+                            [351, 68, 1843, 425, 341, 232, 231, 261, 107]])
+    heat2 = (heat_array * norm_matrix).sum(axis=0)/norm_matrix.sum(axis=0)
+    return heat2
+
+def get_norm_score(hyper_log, plot=True, min_heat=0.05, max_heat=0.3):
+    heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
+                                  params_to_plot=["roi_type", "subject_id"],
+                                  target_to_plot="best_bo_score",
+                                  return_array=True)
+    heat2 = normalize_scores(heat_array)
+
+    if plot:
+        fig, ax = plot_2D_heatmap(range_x, ["mean"], np.expand_dims(heat2, 0),
+                                  title="Mean Score",
+                                  xy_labels=["Region of Interest", "Score"],
+                                  max_heat=max_heat, min_heat=min_heat)
+    else:
+        return heat2
 
 
 def plot_average_scores(hyper_log):
@@ -45,9 +78,10 @@ def plot_average_scores(hyper_log):
     return region_sub_mean[idx]
 
 
-def plot_bo_scores(meta_log, eval_id, subject_id, roi_type,
+def plot_bo_scores(meta_log, hyper_log, subject_id, roi_type,
                    num_bo_per_layer=50, num_layers=8):
-    fig, ax = plt.subplots(figsize=(10,5))
+    fig, ax = plt.subplots(figsize=(14,5))
+    eval_id = hyper_log.hyper_log[hyper_log.hyper_log.subject_id == subject_id][hyper_log.hyper_log.roi_type == roi_type].run_id.iloc[0]
     ax.plot(np.arange(len(meta_log[eval_id].stats.best_bo_score.mean)),
             meta_log[eval_id].stats.best_bo_score.mean)
     for i in range(num_layers-1):
@@ -65,14 +99,15 @@ def plot_bo_scores(meta_log, eval_id, subject_id, roi_type,
     ax.spines['right'].set_visible(False)
     ax.set_xlabel("# Fitting Iteration")
     ax.set_ylabel("Correlation")
-    ax.set_ylim(0.1, 0.35)
+    #ax.set_ylim(0.1, 0.35)
     ax.set_title(f"Layerwise Bayesian Optimization: {subject_id} - {roi_type}")
     return
 
 
 def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
                         num_bo_per_layer=20,
-                        title="MLP Encoder - VGG Layer:"):
+                        title="MLP Encoder - VGG Layer:",
+                        min_heat=0.05, max_heat=0.3):
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):
@@ -89,24 +124,28 @@ def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
             df["best_bo_score"].append(best_score_on_layer)
 
     layer_df = pd.DataFrame(df)
-    fig, axs = plt.subplots(2, 4, figsize=(50, 25))
+    #fig, axs = plt.subplots(2, 4, figsize=(50, 25))
+    all_heats = []
     for i, l_id in enumerate(["layer_" + str(i+1) for i in range(num_layers)]):
-        visualize_2D_grid(layer_df,
-                          params_to_plot=["roi_type", "subject_id"],
-                          target_to_plot="best_bo_score",
-                          fixed_params={"layer_id": l_id},
-                          plot_title=f"{title} {i+1}",
-                          xy_labels=["Region of Interest", "Subject ID"],
-                          variable_name="Correlation: fMRI - Encoder",
-                          min_heat=0.04, max_heat=0.35,
-                          fig=fig, ax=axs.flatten()[i])
-    fig.tight_layout()
+        heat_array, range_x, range_y = visualize_2D_grid(layer_df,
+                                      params_to_plot=["roi_type", "subject_id"],
+                                      target_to_plot="best_bo_score",
+                                      fixed_params={"layer_id": l_id},
+                                      return_array=True)
+        heat2 = normalize_scores(heat_array)
+        all_heats.append(heat2)
+    fig, ax = plot_2D_heatmap(range_x, ["L" + str(i+1) for i in range(num_layers)],
+                              np.stack(all_heats, 0),
+                              title=title,
+                              xy_labels=["Region of Interest", "Layer"],
+                              max_heat=max_heat, min_heat=min_heat)
     return
 
 
-def plot_best_layer(hyper_log, meta_log, num_layers=8,
-                    num_bo_per_layer=50,
-                    title="Best VGG Layer per Subject/ROI:"):
+def plot_best_layer(hyper_log, meta_log, num_layers=5,
+                    num_bo_per_layer=25,
+                    title="Best VGG Layer per Subject/ROI:",
+                    min_heat=0.05, max_heat=0.3):
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):
@@ -119,7 +158,7 @@ def plot_best_layer(hyper_log, meta_log, num_layers=8,
             best_score_on_layer = np.max(sub_layer_results)
             df["subject_id"].append(subject_id)
             df["roi_type"].append(roi_type)
-            df["layer_id"].append("layer_"+str(i+1))
+            df["layer_id"].append("layer_" + str(i+1))
             df["best_bo_score"].append(best_score_on_layer)
 
     layer_df = pd.DataFrame(df)

@@ -1,4 +1,5 @@
 import os
+import glob
 import pickle
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -26,7 +27,6 @@ def load_dict(filename_):
         u = pickle._Unpickler(f)
         u.encoding = 'latin1'
         ret_di = u.load()
-        #print(p)
         #ret_di = pickle.load(f)
     return ret_di
 
@@ -50,10 +50,23 @@ def get_encoding_data(fmri_dir='./data/participants_data_v2021',
 
 def get_activations(activations_dir, layer_name):
     """ Loads NN features into a np array according to layer. """
-    train_file = os.path.join(activations_dir, "train_" + layer_name + ".npy")
-    test_file = os.path.join(activations_dir, "test_" + layer_name + ".npy")
-    train_activations = np.load(train_file)
-    test_activations = np.load(test_file)
+    # Use transformed features
+    if not activations_dir.endswith('activations'):
+        train_file = os.path.join(activations_dir, "train_" + layer_name + ".npy")
+        test_file = os.path.join(activations_dir, "test_" + layer_name + ".npy")
+        train_activations = np.load(train_file)
+        test_activations = np.load(test_file)
+    # Use raw activations (e.g. together with PLS)
+    else:
+        activations_file_list = glob.glob(activations_dir +'/*' + layer + '.npy')
+        activations_file_list.sort()
+        feature_dim = np.load(activations_file_list[0]).shape[0]
+        x = np.zeros((len(activations_file_list), feature_dim))
+        for i, activation_file in enumerate(activations_file_list):
+            temp = np.load(activation_file)
+            x[i, :] = temp
+        train_activations = x[:1000]
+        test_activations = x[1000:]
     scaler = StandardScaler()
     train_activations = scaler.fit_transform(train_activations)
     test_activations = scaler.fit_transform(test_activations)
