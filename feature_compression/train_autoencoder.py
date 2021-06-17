@@ -1,11 +1,11 @@
-from utils.vae import VAE, vae_loss
+from autoencoder import VAE, vae_loss
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from train import get_data_ready
 
 # Import utilities for Cluster distributed runs
-from mle_toolbox.utils import set_random_seeds, get_configs_ready, DeepLogger
+from mle_toolbox.utils import set_random_seeds
 
 # Minimal VAE implementation
 # Adopted from https://github.com/Atcold/pytorch-Deep-Learning/blob/master/11-VAE.ipynb
@@ -14,7 +14,6 @@ from mle_toolbox.utils import set_random_seeds, get_configs_ready, DeepLogger
 def main(net_config, train_config, log_config):
     torch.set_num_threads(train_config.num_torch_threads)
     # First things first - Set the random seed for the example run
-    train_log = DeepLogger(**log_config)
     data_train_loader, data_test_loader, data_train_size, data_test_size = get_data_ready(tensor_size=(28, 28))
 
     set_random_seeds(seed_id=train_config.seed_number, verbose=False)

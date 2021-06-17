@@ -11,7 +11,7 @@ def main(mle: MLExperiment):
     # Set directory for all stored model features to train on
     activations_dir = ('./data/features/' +
                        mle.train_config.feature_model +
-                       '/pca_' + str(mle.train_config.dim_reduction))
+                       '/' + mle.train_config.dim_reduction)
 
     # Get model params to optimize over, update tracked keys
     model_hyperparams = get_model_hyperparams(mle.net_config.encoding_model)
