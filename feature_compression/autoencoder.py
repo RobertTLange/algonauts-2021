@@ -1,49 +1,36 @@
 import torch
 import torch.nn as nn
 
-class VAE(nn.Module):
-    def __init__(self, d):
+class Autoencoder(nn.Module):
+    def __init__(self, input_dim, d):
         super().__init__()
         self.d = d
         self.encoder = nn.Sequential(
-            nn.Linear(784, d ** 2),
+            nn.Linear(input_dim, 1028),
             nn.ReLU(),
-            nn.Linear(d ** 2, d * 2)
+            nn.Linear(1028, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, d)
         )
 
         self.decoder = nn.Sequential(
-            nn.Linear(d, d ** 2),
+            nn.Linear(d, 256),
             nn.ReLU(),
-            nn.Linear(d ** 2, 784),
-            nn.Sigmoid(),
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Linear(512, 1028),
+            nn.ReLU(),
+            nn.Linear(1028, input_dim),
         )
 
-    def reparameterise(self, mu, logvar):
-        if self.training:
-            std = logvar.mul(0.5).exp_()
-            eps = std.data.new(std.size()).normal_()
-            return eps.mul(std).add_(mu)
-        else:
-            return mu
-
     def forward(self, x):
-        mu_logvar = self.encoder(x.view(-1, 784)).view(-1, 2, self.d)
-        mu = mu_logvar[:, 0, :]
-        logvar = mu_logvar[:, 1, :]
-        z = self.reparameterise(mu, logvar)
-        return self.decoder(z), mu, logvar
+        z = self.encoder(x)
+        x_hat = self.decoder(z)
+        return z, x_hat
 
-    def encode(self, x):
-        mu_logvar = self.encoder(x.view(-1, 784)).view(-1, 2, self.d)
-        mu = mu_logvar[:, 0, :]
-        logvar = mu_logvar[:, 1, :]
-        #z = self.reparameterise(mu, logvar)
-        return mu
+loss = nn.MSELoss()
 
-
-def vae_loss(x_hat, x, mu, logvar, beta=1):
-    BCE = nn.functional.binary_cross_entropy(
-        x_hat, x.view(-1, 784), reduction='sum'
-    )
-    KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
-    return BCE + beta*KLD
+def autoencoder_loss(x_hat, x):
+    return loss(x_hat, x)

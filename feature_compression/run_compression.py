@@ -61,18 +61,14 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
 
 
 def run_compression(save_dir, trafo_type, info_title):
-    pca_dims = [100, 250, 500, 750]
-    umap_params ={"n_neighbors": 15,
-                  "min_dist": 0.1,
-                  "n_components": 2,
-                  "metric":'euclidean'}
+    num_components = [100, 250, 500]
     activations_dir = os.path.join(save_dir, "activations")
     # preprocessing using PCA and save
-    for num_pca_dims in pca_dims:
-        info_title += f'_{num_pca_dims}.pkl'
-        dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_pca_dims}')
-        print(f"------performing  {trafo_type}: {num_pca_dims}---------")
-        dim_red_params = {"n_components": num_pca_dims}
+    for num_comps in num_components:
+        info_title += f'_{num_comps}.pkl'
+        dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_comps}')
+        print(f"------performing  {trafo_type}: {num_comps}---------")
+        dim_red_params = {"n_components": num_comps}
         do_dim_reduction_and_save(activations_dir,
                                   dim_red_dir,
                                   trafo_type,
@@ -98,7 +94,8 @@ if __name__ == "__main__":
                   ]
 
     # Loop over all models, create features from forward passes and reduce dims
-    trafo_type = 'pca'
+    #trafo_type = 'umap' #'autoencoder' #'pca'
+    trafo_type = 'autoencoder'
     for model_type in all_models:
         save_dir = f'../data/features/{model_type}'
         run_compression(save_dir,

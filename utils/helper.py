@@ -58,7 +58,7 @@ def get_activations(activations_dir, layer_name):
         test_activations = np.load(test_file)
     # Use raw activations (e.g. together with PLS)
     else:
-        activations_file_list = glob.glob(activations_dir +'/*' + layer + '.npy')
+        activations_file_list = glob.glob(activations_dir +'/*' + layer_name + '.npy')
         activations_file_list.sort()
         feature_dim = np.load(activations_file_list[0]).shape[0]
         x = np.zeros((len(activations_file_list), feature_dim))

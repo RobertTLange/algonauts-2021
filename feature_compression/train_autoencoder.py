@@ -1,51 +1,76 @@
-from autoencoder import VAE, vae_loss
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from train import get_data_ready
+from torch.utils import data
 
+from autoencoder import autoencoder_loss
 # Import utilities for Cluster distributed runs
 from mle_toolbox.utils import set_random_seeds
 
 # Minimal VAE implementation
 # Adopted from https://github.com/Atcold/pytorch-Deep-Learning/blob/master/11-VAE.ipynb
 
+class Dataset(data.Dataset):
+    """ Simple Dataset Wrapper for your Data"""
+    def __init__(self, X):
+        """ Wrap the data in the dataset torch wrapper """
+        self.X = X
 
-def main(net_config, train_config, log_config):
-    torch.set_num_threads(train_config.num_torch_threads)
-    # First things first - Set the random seed for the example run
-    data_train_loader, data_test_loader, data_train_size, data_test_size = get_data_ready(tensor_size=(28, 28))
+    def __len__(self):
+        """ Get the number of samples in the buffer """
+        return self.X.shape[0]
 
-    set_random_seeds(seed_id=train_config.seed_number, verbose=False)
-    net = VAE(d=train_config.latent_code_size)
-    optimizer = optim.Adam(net.parameters(), lr=1e-3, weight_decay=1e-6)
-    # Get first stats for untrained network
-    train_loss = test(net, data_train_loader, train_config.vae_beta)
-    test_loss = test(net, data_test_loader, train_config.vae_beta)
+    def __getitem__(self, index):
+        """ Get one sample from the dataset"""
+        X = self.X[index, ...]
+        return X
+
+
+def fit_autoencoder(net, x_train, batch_size=128, num_epochs=100):
+    torch.set_num_threads(10)
+    set_random_seeds(1234, verbose=False)
+
+    optimizer = optim.Adam(net.parameters(), lr=3e-4, weight_decay=1e-5)
+
+    # Set parameters for the dataloaders
+    train_params = {'batch_size': batch_size,
+                    'shuffle': True,
+                    'num_workers': 2}
+    training_set = Dataset(x_train)
+    data_loader = data.DataLoader(training_set, **train_params)
+
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+    net = net.to(device)
+
+    net, train_loss = train(net, optimizer, data_loader)
 
     time_tic = [0]
-    stats_tic = [train_loss, test_loss]
-    train_log.update_log(time_tic, stats_tic, model=net, save=True)
-
+    stats_tic = [train_loss]
     # Loop over training epochs
-    for ep in range(train_config.num_epochs):
-        net, train_loss = train(net, optimizer, data_train_loader,
-                                train_config.vae_beta)
-        test_loss = test(net, data_test_loader,
-                         train_config.vae_beta)
-        time_tic = [ep+1]
-        stats_tic = [train_loss, test_loss]
-        train_log.update_log(time_tic, stats_tic, model=net, save=True)
+    for ep in range(num_epochs):
+        net, train_loss = train(net, optimizer, data_loader)
+        time_tic.append(ep+1)
+        stats_tic.append(train_loss)
+    print(stats_tic)
+    return net, time_tic, stats_tic
 
 
-def train(net, optimizer, train_loader, beta):
+def train(net, optimizer, train_loader):
     net.train()
     train_loss = 0
-    for x, _ in train_loader:
-        x = x
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+
+    for x in train_loader:
         # ===================forward=====================
-        x_hat, mu, logvar = net(x)
-        loss = vae_loss(x_hat, x, mu, logvar, beta)
+        x = x.to(device).float()
+        z, x_hat= net(x)
+        loss = autoencoder_loss(x_hat, x)
         train_loss += loss.item()
         # ===================backward====================
         optimizer.zero_grad()
@@ -54,23 +79,3 @@ def train(net, optimizer, train_loader, beta):
     # ===================log========================
     train_loss /= len(train_loader.dataset)
     return net, train_loss
-
-
-def test(net, test_loader, beta):
-    with torch.no_grad():
-        net.eval()
-        test_loss = 0
-        for x, y in test_loader:
-            x = x
-            # ===================forward=====================
-            x_hat, mu, logvar = net(x)
-            test_loss += vae_loss(x_hat, x, mu, logvar, beta).item()
-    # ===================log========================
-    test_loss /= len(test_loader.dataset)
-    return test_loss
-
-
-if __name__ == '__main__':
-    train_config, net_config, log_config = get_configs_ready(
-        default_config_fname="configs/train/mnist_vae.json")
-    main(net_config, train_config, log_config)

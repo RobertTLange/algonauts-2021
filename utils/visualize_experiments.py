@@ -31,13 +31,13 @@ def normalize_scores(heat_array):
     heat2 = (heat_array * norm_matrix).sum(axis=0)/norm_matrix.sum(axis=0)
     return heat2
 
-def get_norm_score(hyper_log, plot=True, min_heat=0.05, max_heat=0.3):
+def get_norm_score(hyper_log, plot=False, min_heat=0.05, max_heat=0.3):
     heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
                                   params_to_plot=["roi_type", "subject_id"],
                                   target_to_plot="best_bo_score",
                                   return_array=True)
     heat2 = normalize_scores(heat_array)
-
+    print(heat2)
     if plot:
         fig, ax = plot_2D_heatmap(range_x, ["mean"], np.expand_dims(heat2, 0),
                                   title="Mean Score",
@@ -174,3 +174,12 @@ def plot_best_layer(hyper_log, meta_log, num_layers=5,
                       xy_labels=["Region of Interest", "Subject ID"],
                       variable_name="Layer ID")
     return
+
+
+def plot_combined_scores(scores, range_x, range_y, title, ylabel,
+                         min_heat=0.05, max_heat=0.3):
+    fig, ax = plot_2D_heatmap(range_x, range_y,
+                              np.stack(scores, 0),
+                              title=title,
+                              xy_labels=["Region of Interest", ylabel],
+                              max_heat=max_heat, min_heat=min_heat)
