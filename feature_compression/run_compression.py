@@ -5,6 +5,8 @@ import numpy as np
 from fit_pca import fit_trafo_pca
 from fit_umap import fit_trafo_umap
 from fit_autoencoder import fit_trafo_autoencoder
+from fit_mds import fit_trafo_mds
+
 from mle_toolbox.utils import save_pkl_object
 from sklearn.preprocessing import StandardScaler
 
@@ -37,7 +39,7 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
         x_test = StandardScaler().fit_transform(x_test)
         x_train = StandardScaler().fit_transform(x_train)
 
-        # TODO: General fitting of dimensionality reduction technique
+        # Plug&Play - Fitting of dimensionality reduction technique
         if trafo_type == "pca":
             x_train_trafo, x_test_trafo, info_l = fit_trafo_pca(x_train, x_test,
                                                                 dim_red_params)
@@ -48,6 +50,9 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
             x_train_trafo, x_test_trafo, info_l = fit_trafo_autoencoder(
                                                                x_train, x_test,
                                                                dim_red_params)
+        elif trafo_type == "mds":
+            x_train_trafo, x_test_trafo, info_l = fit_trafo_mds(x_train, x_test,
+                                                                dim_red_params)
         #print(x_train.shape, x_train_trafo.shape)
         train_save_path = os.path.join(save_dir, "train_" + layer)
         test_save_path = os.path.join(save_dir, "test_" + layer)
@@ -96,6 +101,7 @@ if __name__ == "__main__":
     # Loop over all models, create features from forward passes and reduce dims
     #trafo_type = 'umap' #'autoencoder' #'pca'
     trafo_type = 'autoencoder'
+    trafo_type = "mds"
     for model_type in all_models:
         save_dir = f'../data/features/{model_type}'
         run_compression(save_dir,

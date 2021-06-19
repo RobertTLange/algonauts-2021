@@ -7,7 +7,7 @@ def fit_trafo_autoencoder(x_train, x_test, ae_params):
                       d=ae_params["n_components"])
     net, time, stats = fit_autoencoder(net, x_train,
                                        batch_size=128,
-                                       num_epochs=20)
+                                       num_epochs=50)
     # trafo = dim_red.fit(x_train)
     if torch.cuda.is_available():
         device = torch.device('cuda')

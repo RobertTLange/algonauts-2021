@@ -2,8 +2,8 @@ import umap
 
 
 def fit_trafo_umap(x_train, x_test, umap_params):
-    fit_params ={"n_neighbors": 15,
-                  "min_dist": 0.1,
+    fit_params ={"n_neighbors": 100,
+                  "min_dist": 0.5,
                   "n_components": umap_params["n_components"],
                   "metric":'euclidean',
                   "n_jobs": 10}

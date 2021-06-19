@@ -1,7 +1,5 @@
 # Experiments to Run
 
-- [ ] ResNet50 PCA-250 Partial LS 20 BO Iters
-
 - [ ] Fix Partial LS + ResNet50
     - Different dim reduction techniques
         - PCA-100
@@ -24,6 +22,7 @@
         - Resnet101
         - Resnet152
         - Efficientnet-b3
+        - ResNext
 
 - [ ] Fix <Dim Reduction> + <Feature Architecture>
     - Different encoding models
