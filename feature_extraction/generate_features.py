@@ -47,6 +47,19 @@ def get_activations_and_save(model, video_list, activations_dir,
                 trn.ToTensor(),
                 trn.Normalize([0.5, 0.5, 0.5],
                               [0.5, 0.5, 0.5])])
+    elif model_type in ['simclr_r50_1x_sk0_100pct',
+                        'simclr_r50_1x_sk0_10pct',
+                        'simclr_r50_1x_sk0_1pct',
+                        'simclr_r50_2x_sk1_100pct',
+                        'simclr_r50_2x_sk1_10pct',
+                        'simclr_r50_2x_sk1_1pct',
+                        'simclr_r152_3x_sk1_100pct',
+                        'simclr_r152_3x_sk1_10pct',
+                        'simclr_r152_3x_sk1_1pct']:
+        centre_crop = trn.Compose([
+                trn.ToPILImage(),
+                trn.Resize((224,224)),
+                trn.ToTensor()])
     else:
         centre_crop = trn.Compose([
                 trn.ToPILImage(),
@@ -129,6 +142,7 @@ def run_activation_features(model_type, save_dir, video_dir):
 
     # get and save activations from raw video
     activations_dir = os.path.join(save_dir, "activations")
+    print(activations_dir)
     if not os.path.exists(activations_dir):
         os.makedirs(activations_dir)
     print("-------------Saving activations ----------------------------")
@@ -138,7 +152,7 @@ def run_activation_features(model_type, save_dir, video_dir):
 
 
 if __name__ == "__main__":
-    video_dir = './data/AlgonautsVideos268_All_30fpsmax/'
+    video_dir = '../data/AlgonautsVideos268_All_30fpsmax/'
     all_models = [
                   #'alexnet',
                   #'vgg',
@@ -155,5 +169,5 @@ if __name__ == "__main__":
 
     # Loop over all models, create features from forward passes and reduce dims
     for model_type in all_models:
-        save_dir = f'./data/features/{model_type}'
+        save_dir = f'../data/features/{model_type}'
         run_activation_features(model_type, save_dir, video_dir)

@@ -123,7 +123,7 @@ class ResNet(nn.Module):
         self.net = nn.Sequential(*ops)
         self.fc = nn.Linear(channels_in, 1000)
 
-    def forward(self, x, apply_fc=False):
+    def forward(self, x):
         all_features = []
         for l in self.net:
             x = l(x)

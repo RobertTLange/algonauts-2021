@@ -43,6 +43,25 @@ class ImageNetVal(object):
                 torchvision.transforms.ToTensor(),
                 norm_transform,
             ]))
+
+        # No normalization for SimCLR-v2!
+        if model_type in ['simclr_r50_1x_sk0_100pct',
+                            'simclr_r50_1x_sk0_10pct',
+                            'simclr_r50_1x_sk0_1pct',
+                            'simclr_r50_2x_sk1_100pct',
+                            'simclr_r50_2x_sk1_10pct',
+                            'simclr_r50_2x_sk1_1pct',
+                            'simclr_r152_3x_sk1_100pct',
+                            'simclr_r152_3x_sk1_10pct',
+                            'simclr_r152_3x_sk1_1pct']:
+            dataset = torchvision.datasets.ImageFolder(
+                self.imagenet_val_path,
+                torchvision.transforms.Compose([
+                    torchvision.transforms.Resize(256),
+                    torchvision.transforms.CenterCrop(224),
+                    torchvision.transforms.ToTensor(),
+                ]))
+
         data_loader = torch.utils.data.DataLoader(dataset,
                                                   batch_size=128,
                                                   shuffle=False,
