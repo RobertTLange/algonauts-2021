@@ -24,13 +24,14 @@
         - Efficientnet-b3
         - ResNext
 
-- [ ] Fix <Dim Reduction> + <Feature Architecture>
+- [ ] Fix Dim Reduction + Feature Architecture
     - Different encoding models
         - OLS
         - Partial LS
         - Elastic Net
         - Residual MLP
-        - GradientTreeRegressor
+        - CCA
+        - PLS-SVD
 
 - [ ] VOne Networks
     - VOne-AlexNet
