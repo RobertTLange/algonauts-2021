@@ -66,7 +66,7 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
 
 
 def run_compression(save_dir, trafo_type, info_title):
-    num_components = [100, 250, 500]
+    num_components = [50] # [50, 100, 250, 500]
     activations_dir = os.path.join(save_dir, "activations")
     # preprocessing using PCA and save
     for num_comps in num_components:
@@ -83,25 +83,24 @@ def run_compression(save_dir, trafo_type, info_title):
 
 if __name__ == "__main__":
     all_models = [
-                  #'alexnet',
-                  #'vgg',
+                  'alexnet',
+                  'vgg',
                   'resnet50'
-                  #'resnet18', 'resnet34', 'resnet101', 'resnet152',
-                  #'efficientnet_b3', 'resnext50_32x4d',
-                  #"vone-alexnet",
-                  #"vone-resnet50",
-                  #"vone-resnet50_at",
-                  #"vone-resnet50_ns",
-                  #"vone-cornets",
-                  # 'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
-                  # 'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
+                  'resnet18', 'resnet34', 'resnet101', 'resnet152',
+                  'efficientnet_b3', 'resnext50_32x4d',
+                  "vone-alexnet",
+                  "vone-resnet50",
+                  "vone-resnet50_at",
+                  "vone-resnet50_ns",
+                  "vone-cornets",
+                  'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
+                  'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
                   # 'simclr_r152_3x_sk1_100pct', 'simclr_r152_3x_sk1_10pct', 'simclr_r152_3x_sk1_1pct'
                   ]
 
     # Loop over all models, create features from forward passes and reduce dims
-    #trafo_type = 'umap' #'autoencoder' #'pca'
-    trafo_type = 'autoencoder'
-    trafo_type = "mds"
+    #trafo_type = 'umap' 'autoencoder' 'pca' 'mds'
+    trafo_type = 'pca'
     for model_type in all_models:
         save_dir = f'../data/features/{model_type}'
         run_compression(save_dir,

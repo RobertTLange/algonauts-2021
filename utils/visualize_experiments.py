@@ -5,7 +5,7 @@ from mle_toolbox.visualize import visualize_2D_grid, plot_2D_heatmap
 
 
 def plot_roi_subject_grid(hyper_log, title="MLP Encoder - Best AlexNet Layer",
-                          min_heat=0.05, max_heat=0.3):
+                          min_heat=0.1, max_heat=0.325):
     heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
                                   params_to_plot=["roi_type", "subject_id"],
                                   target_to_plot="best_bo_score",
@@ -31,7 +31,7 @@ def normalize_scores(heat_array):
     heat2 = (heat_array * norm_matrix).sum(axis=0)/norm_matrix.sum(axis=0)
     return heat2
 
-def get_norm_score(hyper_log, plot=False, min_heat=0.05, max_heat=0.3):
+def get_norm_score(hyper_log, plot=False, min_heat=0.1, max_heat=0.325):
     heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
                                   params_to_plot=["roi_type", "subject_id"],
                                   target_to_plot="best_bo_score",
@@ -40,7 +40,7 @@ def get_norm_score(hyper_log, plot=False, min_heat=0.05, max_heat=0.3):
     print(heat2)
     if plot:
         fig, ax = plot_2D_heatmap(range_x, ["mean"], np.expand_dims(heat2, 0),
-                                  title="Mean Score",
+                                  title="#Voxel per Subject Weighted Score",
                                   xy_labels=["Region of Interest", "Score"],
                                   max_heat=max_heat, min_heat=min_heat)
     else:
@@ -107,7 +107,7 @@ def plot_bo_scores(meta_log, hyper_log, subject_id, roi_type,
 def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
                         num_bo_per_layer=20,
                         title="MLP Encoder - VGG Layer:",
-                        min_heat=0.05, max_heat=0.3):
+                        min_heat=0.1, max_heat=0.325):
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):
@@ -145,7 +145,7 @@ def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
 def plot_best_layer(hyper_log, meta_log, num_layers=5,
                     num_bo_per_layer=25,
                     title="Best VGG Layer per Subject/ROI:",
-                    min_heat=0.05, max_heat=0.3):
+                    min_heat=0.1, max_heat=0.325):
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):
@@ -177,7 +177,7 @@ def plot_best_layer(hyper_log, meta_log, num_layers=5,
 
 
 def plot_combined_scores(scores, range_x, range_y, title, ylabel,
-                         min_heat=0.05, max_heat=0.3):
+                         min_heat=0.1, max_heat=0.325):
     fig, ax = plot_2D_heatmap(range_x, range_y,
                               np.stack(scores, 0),
                               title=title,

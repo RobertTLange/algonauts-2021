@@ -1,5 +1,5 @@
-feature_extraction/simclr_v2/torch_ckpt
-feature_extraction/simclr_v2/models
+feature_extraction/simclr_v2_model/torch_ckpt
+feature_extraction/simclr_v2_model/models
 data/
 features/
 imagenet_val/

@@ -144,7 +144,6 @@ if __name__ == "__main__":
                   #'vgg',
                   #'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                   #'efficientnet_b3', 'resnext50_32x4d',
-                  #"vone-alexnet",
                   #"vone-resnet50",
                   #"vone-resnet50_at",
                   #"vone-resnet50_ns",
