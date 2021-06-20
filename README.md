@@ -1,54 +1,45 @@
-# Experiments to Run
+# Algonauts-2021 Challenge Solution
 
-- [ ] Fix Partial LS + ResNet50
-    - Different dim reduction techniques
-        - PCA-100
-        - PCA-250
-        - PCA-500
-        - UMAP-100
-        - UMAP-250
-        - UMAP-500
-        - VAE-100
-        - VAE-250
-        - VAE-500
+![](docs/pipeline.png)
 
-- [ ] Fix <Dim Reduction> + Partial LS
-    - Different feature gen architectures
-        - AlexNet
-        - VGG-19
-        - Resnet18
-        - Resnet34
-        - Resnet50
-        - Resnet101
-        - Resnet152
-        - Efficientnet-b3
-        - ResNext
+## Installation & Reproduction
 
-- [ ] Fix Dim Reduction + Feature Architecture
-    - Different encoding models
-        - OLS
-        - Partial LS
-        - Elastic Net
-        - Residual MLP
-        - CCA
-        - PLS-SVD
+Install all required dependencies (in a clean environment):
+```
+pip install -r requirements.txt
+```
 
-- [ ] VOne Networks
-    - VOne-AlexNet
-    - VOne-ResNet
-    - VOne-ResNet-AT
-    - VOne-ResNet-RS
-    - VOne-CornetS
+Generate activations from different neural network architectures (AlexNet, VGG, ResNets, VOneNetworks and SimCLR-v2):
+```
+cd feature_extraction
+python generate_features.py
+cd ../feature_compression
+python run_compression.py
+```
 
-- [ ] 9 SimCLR-v2 Networks
+Run on Bayesian Optimization tuning (50 iterations) for Subject 1 and ROI V1 with AlexNet PCA-100 features and ElasticNet encoding:
+```
+python run_roi.py -config_fname configs/train/base_config.json
+```
 
-- [ ] ImageNet Validation Scores
+Running every single configuration sequentially can take a long time. We parallelize the general Encoding-10-Fold-CV-BayesOpt pipeline over subjects and ROIs. In order to do so efficiently we rely on the [`MLE-Toolbox`](https://github.com/RobertTLange/mle-toolbox). It provides a framework for logging and scheduling experiments on either Slurm, OpenGridEngine or Google Cloud Platform. A grid search over subjects and ROIs can then be launched via:
 
-## Important Notes:
+```
+mle run configs/cluster/base_roi.yaml
+```
+
+## Visualizing The Results
+
+```
+jupyter lab notebooks/inspect_experiments.ipynb
+```
+
+## Notes and Questions:
 - Need to upload result .pkl as .zip without subdirectories being zipped!
 - Can get detailed results for all regions via `Download output from scoring step`
-
-## Questions:
+- Only using 5 ResNet layers, but there are many more. What resolution to pick?
+- What sampling rate and temporal feature aggregation makes sense (weighted mean)?
+- LOC encodes movement: Does it make sense to model differences in features?
 - Different dim. reduction techniques (PCA dims/PWCCA)?
 - What are repetitions? And what does this line of code do?
 `ROI_data_train = np.mean(ROI_data["train"], axis = 1)`
@@ -61,30 +52,10 @@
 - What model fits best for which ROI and subject?
 - How to combine features of different layers/networks?
 - Finetune feature extractor on neural data
-
-## Data Exploration
-- Heterogeneity across subjects and ROIs
-    - Responses to same video
-    - Voxels recorded
 - What categories are in the train/test set?
     - ImageNet predictions/Manual
     - Fine-tuning on these?
-
-## Modelling - Mainly on Encoding Side!
 - Shared Resnet core + Subject-specific + ROI-specific output heads
 - FFW vs. LSTM and which level recurrence?
-- XGBoostRegressor subject/roi level
-
-## Links:
-- XGBoost Regression: https://github.com/dmlc/xgboost/tree/master/demo/CLI/regression
-- XGBoost CV: https://github.com/dmlc/xgboost/blob/master/demo/guide-python/cross_validation.py
-- Sklearn Multioutput: https://scikit-learn.org/stable/modules/generated/sklearn.multioutput.MultiOutputRegressor.html
-- Multioutput XGBoost: https://gist.github.com/MLWave/4a3f8b0fee43d45646cf118bda4d202a
-- BayesOpt XGBoost: https://www.kaggle.com/btyuhas/bayesian-optimization-with-xgboost
-- BayesOpt API: https://github.com/fmfn/BayesianOptimization
-- Pretrained ViT: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
-- Multioutput cross validation: https://machinelearningmastery.com/multi-output-regression-models-with-python/
-- Teapot evo algo: http://epistasislab.github.io/tpot/
-- Torchvision models: https://pytorch.org/vision/stable/models.html
-- Alexnet torch vision: https://pytorch.org/vision/stable/_modules/torchvision/models/alexnet.html#alexnet
+- Pretrained ViT: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py - how to get features
 - Orthogonal Matching Pursuit: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.OrthogonalMatchingPursuit.html
