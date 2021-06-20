@@ -2,7 +2,7 @@ import numpy as np
 from mle_toolbox import MLExperiment
 from mle_toolbox.utils import print_framed
 from utils.helper import get_encoding_data
-from bayes_opt_search import get_hyperspace, run_bayes_opt
+from utils.bayes_opt_search import get_hyperspace, run_bayes_opt
 from encoding_models import EncoderFitter, get_model_hyperparams
 
 

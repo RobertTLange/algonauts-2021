@@ -19,6 +19,8 @@ from encoding_models.cca import (fit_cca,
 from encoding_models.pls_canonical import (fit_pls_canonical,
                                     predict_pls_canonical,
                                     pls_canonical_params_to_search)
+from encoding_models.orthogonal_matching import (fit_omp, predict_omp,
+                                                 omp_params_to_search)
 import numpy as np
 from sklearn.model_selection import RepeatedKFold
 from utils.evaluate import evaluation_metrics
@@ -39,6 +41,8 @@ def get_model_hyperparams(model_name):
         return cca_params_to_search
     elif model_name == "pls_canonical":
         return pls_canonical_params_to_search
+    elif model_name == "omp":
+        return omp_canonical_params_to_search
 
 
 class EncoderFitter(object):
@@ -78,6 +82,9 @@ class EncoderFitter(object):
         elif self.model_name == "pls_canonical":
             model_params = fit_pls_canonical(model_config, X_train, y_train)
             y_pred = predict_pls_canonical(model_params, X_val)
+        elif self.model_name == "omp":
+            model_params = fit_omp(model_config, X_train, y_train)
+            y_pred = predict_omp(model_params, X_val)
         corr, mse, mae = evaluation_metrics(y_val, y_pred)
         return corr, mse, mae
 
@@ -119,6 +126,8 @@ class EncoderFitter(object):
             model_params = fit_cca(model_config, self.X, self.y)
         elif self.model_name == "pls_canonical":
             model_params = fit_pls_canonical(model_config, self.X, self.y)
+        elif self.model_name == "omp":
+            model_params = fit_omp(model_config, self.X, self.y)
         y_pred = self.predict(model_params, self.X_test)
         return model_params, y_pred
 
@@ -138,4 +147,6 @@ class EncoderFitter(object):
             y_pred = predict_cca(model_params, X)
         elif self.model_name == "pls_canonical":
             y_pred = predict_pls_canonical(model_params, X)
+        elif self.model_name == "omp":
+            y_pred = predict_omp(model_params, X)
         return y_pred
