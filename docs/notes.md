@@ -1,10 +1,22 @@
+## Need to Run Before Group Meeting
+
+- [x] Get activations
+    - All architectures: Mean
+    - ResNet50: HRF Filters 1,2,3
+
+- [ ] Get dim reduction
+    - All architectures: PCA
+    - ResNet50: UMAP, MDS, VAE
+
+- [ ] Run compression: ResNet50 + PLS
+- [ ] Run architectures: PCA-???
+- [ ] Run encoders: Architecture-???
+- [ ] Run temporal filters (mean, 1d-pca, hrf-1, hrf-2, hrf-3)
+- [ ] Run VOneNetworks
+- [ ] Run SimCLR-v2
+
 ## Ideas to Try Out
 
-- Use different features for temporal dynamics
-    - PCA time + PCA videos
-    - Tensor Composition Analysis
-    - Multilinear PCA
-    - BOLD Filter Convolution of Features
 - Use more residual layers
 - Rerun with ResNet152 encoding + orthogonal matching
 - Try doing decoding from imagenet video labels
