@@ -8,35 +8,37 @@ meta_job_args:
 
 # Parameters specific to the hyperparameter search
 param_search_args:
-    search_type: "grid"
-    hyperlog_fname: "hyper_log.pkl"
-    no_results_logging: False
-    reload_log: False
-    verbose_logging: True
-    maximize_objective: True
-    problem_type: "best"
-    eval_metrics:
-        - "best_bo_score"
-        - "mse_mean"
-        - "mae_mean"
-    num_search_batches: 1
-    num_iter_per_batch: 10
-    num_evals_per_iter: 1
-    params_to_search:
-        categorical:
-            roi_type:
-                - 'WB'
-            subject_id:
-                - 'sub01'
-                - 'sub02'
-                - 'sub03'
-                - 'sub04'
-                - 'sub05'
-                - 'sub06'
-                - 'sub07'
-                - 'sub08'
-                - 'sub09'
-                - 'sub10'
+    search_logging:
+        reload_log: False
+        verbose_log: True
+        max_objective: True
+        problem_type: "best"
+        eval_metrics:
+            - "best_bo_score"
+            - "mse_mean"
+            - "mae_mean"
+    search_resources:
+        num_search_batches: 1
+        num_evals_per_batch: 10
+        num_seeds_per_eval: 1
+    search_config:
+        search_type: "grid"
+        search_schedule: "sync"
+        search_params:
+            categorical:
+                roi_type:
+                    - 'WB'
+                subject_id:
+                    - 'sub01'
+                    - 'sub02'
+                    - 'sub03'
+                    - 'sub04'
+                    - 'sub05'
+                    - 'sub06'
+                    - 'sub07'
+                    - 'sub08'
+                    - 'sub09'
+                    - 'sub10'
 
 # Parameters specific to an individual job
 single_job_args:

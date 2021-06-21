@@ -1,6 +1,13 @@
-- Use feature differences for LOC modelling
+## Ideas to Try Out
+
+- Use different features for temporal dynamics
+    - PCA time + PCA videos
+    - Tensor Composition Analysis
+    - Multilinear PCA
+    - BOLD Filter Convolution of Features
 - Use more residual layers
 - Rerun with ResNet152 encoding + orthogonal matching
+- Try doing decoding from imagenet video labels
 
 ## Notes and Questions:
 
@@ -26,5 +33,7 @@
     - Fine-tuning on these?
 - Shared Resnet core + Subject-specific + ROI-specific output heads
 - FFW vs. LSTM and which level recurrence?
+
+- Convolving with HRF: https://bic-berkeley.github.io/psych-214-fall-2016/convolution_background.html
 - Pretrained ViT: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py - how to get features
 - Orthogonal Matching Pursuit: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.OrthogonalMatchingPursuit.html

@@ -66,12 +66,13 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
 
 
 def run_compression(save_dir, trafo_type, info_title):
-    num_components = [50] # [50, 100, 250, 500]
+    num_components = [50, 100, 250] #, 500]
     activations_dir = os.path.join(save_dir, "activations")
     # preprocessing using PCA and save
     for num_comps in num_components:
         info_title += f'_{num_comps}.pkl'
         dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_comps}')
+        print(dim_red_dir)
         print(f"------performing  {trafo_type}: {num_comps}---------")
         dim_red_params = {"n_components": num_comps}
         do_dim_reduction_and_save(activations_dir,
@@ -85,8 +86,7 @@ if __name__ == "__main__":
     all_models = [
                   'alexnet',
                   'vgg',
-                  #'resnet50'
-                  'resnet18', 'resnet34', 'resnet101', 'resnet152',
+                  'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                   'efficientnet_b3', 'resnext50_32x4d',
                   #"vone-alexnet",
                   "vone-resnet50",
@@ -100,9 +100,12 @@ if __name__ == "__main__":
 
     # Loop over all models, create features from forward passes and reduce dims
     #trafo_type = 'umap' 'autoencoder' 'pca' 'mds'
-    trafo_type = 'pca'
-    for model_type in all_models:
-        save_dir = f'../data/features/{model_type}'
-        run_compression(save_dir,
-                        trafo_type=trafo_type,
-                        info_title=f'{model_type}_{trafo_type}')
+    all_trafo_types = ['pca', 'umap', 'mds', 'autoencoder']
+    filter_name = 'mean'
+
+    for trafo_type in all_trafo_types:
+        for model_type in all_models:
+            save_dir = f'../data/features/{model_type}/{filter_name}'
+            run_compression(save_dir,
+                            trafo_type=trafo_type,
+                            info_title=f'{model_type}_{trafo_type}')

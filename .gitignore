@@ -3,6 +3,7 @@ feature_extraction/simclr_v2_model/models
 data/
 features/
 imagenet_val/
+*.npy
 *.JPG
 *.gif
 *.zip

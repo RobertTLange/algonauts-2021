@@ -11,6 +11,7 @@ def main(mle: MLExperiment):
     # Set directory for all stored model features to train on
     activations_dir = ('./data/features/' +
                        mle.train_config.feature_model +
+                       '/' + mle.train_config.filter_type +
                        '/' + mle.train_config.dim_reduction)
 
     # Get model params to optimize over, update tracked keys
