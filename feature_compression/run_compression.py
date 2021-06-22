@@ -32,7 +32,7 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
         x = np.zeros((len(activations_file_list),feature_dim))
         for i, activation_file in enumerate(activations_file_list):
             temp = np.load(activation_file)
-            x[i,:] = temp
+            x[i,:] = temp.squeeze()
         x_train = x[:1000,:]
         x_test = x[1000:]
         #print(x.shape, x_train.shape, x_test.shape)S
@@ -100,12 +100,19 @@ if __name__ == "__main__":
 
     # Loop over all models, create features from forward passes and reduce dims
     #trafo_type = 'umap' 'autoencoder' 'pca' 'mds'
-    all_trafo_types = ['pca', 'umap', 'mds', 'autoencoder']
-    filter_name = 'mean'
-
-    for trafo_type in all_trafo_types:
-        for model_type in all_models:
-            save_dir = f'../data/features/{model_type}/{filter_name}'
-            run_compression(save_dir,
-                            trafo_type=trafo_type,
-                            info_title=f'{model_type}_{trafo_type}')
+    all_models = ['resnet50']
+    all_trafo_types = ['pca'] #['umap', 'autoencoder', 'mds']
+    filter_names = [
+                    #'mean',
+                    '1d-pca',
+                    'bold-kernel-1',
+                    'bold-kernel-2',
+                    'bold-kernel-3'
+                    ]
+    for filter_name in filter_names:
+        for trafo_type in all_trafo_types:
+            for model_type in all_models:
+                save_dir = f'../data/features/{model_type}/{filter_name}'
+                run_compression(save_dir,
+                                trafo_type=trafo_type,
+                                info_title=f'{model_type}_{trafo_type}')

@@ -4,22 +4,25 @@
     - All architectures: Mean
     - ResNet50: HRF Filters 1,2,3
 
-- [ ] Get dim reduction
+- [x] Get dim reduction
     - All architectures: PCA
     - ResNet50: UMAP, MDS, VAE
 
-- [ ] Run compression: ResNet50 + PLS
-- [ ] Run architectures: PCA-???
-- [ ] Run encoders: Architecture-???
+- [x] Run compression: ResNet50 + PLS
+- [x] Run architectures: PCA-50
+- [x] Run encoders: Architecture-ResNet152
 - [ ] Run temporal filters (mean, 1d-pca, hrf-1, hrf-2, hrf-3)
 - [ ] Run VOneNetworks
 - [ ] Run SimCLR-v2
 
 ## Ideas to Try Out
 
-- Use more residual layers
+- Use more residual layers/finer resolution - relu/pooling
+- Cross-validate range of HRF filters
 - Rerun with ResNet152 encoding + orthogonal matching
 - Try doing decoding from imagenet video labels
+    - use to inform encoding models?!
+- Try combining predictions across datasets/encoding models
 
 ## Notes and Questions:
 

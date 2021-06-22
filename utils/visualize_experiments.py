@@ -5,7 +5,7 @@ from mle_toolbox.visualize import visualize_2D_grid, plot_2D_heatmap
 
 
 def plot_roi_subject_grid(hyper_log, title="MLP Encoder - Best AlexNet Layer",
-                          min_heat=0.1, max_heat=0.325):
+                          min_heat=0.135, max_heat=0.35):
     heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
                                   params_to_plot=["roi_type", "subject_id"],
                                   target_to_plot="best_bo_score",
@@ -31,7 +31,7 @@ def normalize_scores(heat_array):
     heat2 = (heat_array * norm_matrix).sum(axis=0)/norm_matrix.sum(axis=0)
     return heat2
 
-def get_norm_score(hyper_log, plot=False, min_heat=0.1, max_heat=0.325):
+def get_norm_score(hyper_log, plot=False, min_heat=0.135, max_heat=0.35):
     heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
                                   params_to_plot=["roi_type", "subject_id"],
                                   target_to_plot="best_bo_score",
@@ -107,7 +107,7 @@ def plot_bo_scores(meta_log, hyper_log, subject_id, roi_type,
 def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
                         num_bo_per_layer=20,
                         title="MLP Encoder - VGG Layer:",
-                        min_heat=0.1, max_heat=0.325):
+                        min_heat=0.135, max_heat=0.35):
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):

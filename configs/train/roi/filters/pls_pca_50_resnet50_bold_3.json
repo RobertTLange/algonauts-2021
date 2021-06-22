@@ -3,7 +3,7 @@
                   # Feature-specific data (NN model)
                   "fmri_dir": "./data/participants_data_v2021",
                   "feature_model": "resnet50",
-                  "filter_type": "mean",
+                  "filter_type": "bold-kernel-3",
                   "feature_layers_to_consider": ["layer_1", "layer_2",
                                                  "layer_3", "layer_4",
                                                  "layer_5"],
@@ -32,4 +32,4 @@
                 "overwrite_experiment_dir": 1,
                 "model_type": "sklearn"},
  "net_config": {# Encoding model-specific data
-                "encoding_model": "mlp_network"}}
+                "encoding_model": "partial_ls"}}

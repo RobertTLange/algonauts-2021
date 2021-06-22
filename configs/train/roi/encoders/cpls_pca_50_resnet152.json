@@ -2,14 +2,15 @@
                   "subject_id": "sub01",
                   # Feature-specific data (NN model)
                   "fmri_dir": "./data/participants_data_v2021",
-                  "feature_model": "resnext50_32x4d",
+                  "feature_model": "resnet152",
+                  "filter_type": "mean",
                   "feature_layers_to_consider": ["layer_1", "layer_2",
                                                  "layer_3", "layer_4",
                                                  "layer_5"],
-                  "dim_reduction": 100,
+                  "dim_reduction": "pca_50",
                   # Hyperparameter-specific data (BOpt)
                   "bo_eval_metric": "corr_mean",
-                  "bo_opt_iters": 30,
+                  "bo_opt_iters": 25,
                   "num_cv_folds": 10,
                   "smbo_config": {"base_estimator": "GP",
                                   "acq_func": "gp_hedge",
@@ -29,6 +30,6 @@
                                   "layer_id"],
                 "print_every_k_updates": 1,
                 "overwrite_experiment_dir": 1,
-                "model_type": "torch"},
+                "model_type": "sklearn"},
  "net_config": {# Encoding model-specific data
-                "encoding_model": "mlp_network"}}
+                "encoding_model": "pls_canonical"}}

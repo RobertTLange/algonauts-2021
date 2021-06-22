@@ -6,7 +6,8 @@
                   "filter_type": "mean",
                   "feature_layers_to_consider": ["layer_1", "layer_2",
                                                  "layer_3", "layer_4",
-                                                 "layer_5"],
+                                                 "layer_5", "layer_6",
+                                                 "layer_7", "layer_8"],
                   "dim_reduction": "pca_50",
                   # Hyperparameter-specific data (BOpt)
                   "bo_eval_metric": "corr_mean",

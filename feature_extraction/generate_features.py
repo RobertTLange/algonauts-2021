@@ -232,30 +232,34 @@ if __name__ == "__main__":
                   'simclr_r50_2x_sk1_100pct'# 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
                   #'simclr_r152_3x_sk1_100pct', 'simclr_r152_3x_sk1_10pct', 'simclr_r152_3x_sk1_1pct'
                   ]
-    all_models = ['resnet50']
-    filter_config = {"filter_name": "raw",
-                     "sampling_rate": 4}
-    filter_config = {"filter_name": "1d-pca",
-                     "sampling_rate": 4}
-    filter_config = {"filter_name": "bold-kernel-1",
-                     "sampling_rate": 4,
-                     "peak": 20,
-                     "under": 40,
-                     'under_coeff': 0.35}
-    filter_config = {"filter_name": "bold-kernel-2",
-                     "sampling_rate": 4,
-                     "peak": 60,
-                     "under": 80,
-                     'under_coeff': 0.5}
-    filter_config = {"filter_name": "bold-kernel-3",
-                     "sampling_rate": 4,
-                     "peak": 40,
-                     "under": 60,
-                     'under_coeff': 0.35}
-    filter_config = {"filter_name": "mean",
-                     "sampling_rate": 4}
+    all_models = ['resnet152']
+    filter_configs = [
+                     # {"filter_name": "raw",
+                     # "sampling_rate": 4},
+                     # {"filter_name": "mean",
+                     #  "sampling_rate": 4}
+                     {"filter_name": "1d-pca",
+                      "sampling_rate": 4},
+                     {"filter_name": "bold-kernel-1",
+                      "sampling_rate": 4,
+                      "peak": 20,
+                      "under": 40,
+                      'under_coeff': 0.35},
+                     {"filter_name": "bold-kernel-2",
+                      "sampling_rate": 4,
+                      "peak": 60,
+                      "under": 80,
+                      'under_coeff': 0.5},
+                     {"filter_name": "bold-kernel-3",
+                      "sampling_rate": 4,
+                      "peak": 40,
+                      "under": 60,
+                      'under_coeff': 0.35}]
+
     # Loop over all models, create features from forward passes and reduce dims
-    for model_type in all_models:
-        save_dir = f'../data/features/{model_type}/{filter_config["filter_name"]}'
-        print(save_dir)
-        run_activation_features(model_type, save_dir, video_dir, filter_config)
+    for filter_config in filter_configs:
+        for model_type in all_models:
+            save_dir = f'../data/features/{model_type}/{filter_config["filter_name"]}'
+            print(save_dir)
+            run_activation_features(model_type, save_dir,
+                                    video_dir, filter_config)
