@@ -42,7 +42,7 @@ def get_model_hyperparams(model_name):
     elif model_name == "pls_canonical":
         return pls_canonical_params_to_search
     elif model_name == "omp":
-        return omp_canonical_params_to_search
+        return omp_params_to_search
 
 
 class EncoderFitter(object):

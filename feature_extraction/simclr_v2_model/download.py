@@ -48,8 +48,11 @@ if __name__ == '__main__':
     # https://arxiv.org/abs/2006.10029
     # SK = bool for selective kernel -  a channel-wise attention mechanism - parameter efficiency
     # 1x/2x/3x = wider channels than normal resnet
-    all_simclr_models = ['r50_1x_sk0', 'r50_2x_sk1', 'r152_3x_sk1']
-    all_categories = ['finetuned_100pct', 'finetuned_10pct', 'finetuned_1pct']
+    all_simclr_models = ['r50_1x_sk0', 'r50_2x_sk1',
+                         'r101_1x_sk0', 'r101_1x_sk1',
+                         'r101_2x_sk0', 'r101_2x_sk1',
+                         'r152_2x_sk1', 'r152_3x_sk1']
+    all_categories = ['finetuned_100pct']
     for m in all_simclr_models:
         for c in all_categories:
             run(m, c)

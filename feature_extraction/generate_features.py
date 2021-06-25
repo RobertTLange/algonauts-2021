@@ -190,15 +190,7 @@ def run_activation_features(model_type, save_dir, video_dir, filter_config):
                         "vone-cornets"]:
         model_name = model_type.split("-")[1]
         model = load_vonenet(model_name)
-    elif model_type in ['simclr_r50_1x_sk0_100pct',
-                        'simclr_r50_1x_sk0_10pct',
-                        'simclr_r50_1x_sk0_1pct',
-                        'simclr_r50_2x_sk1_100pct',
-                        'simclr_r50_2x_sk1_10pct',
-                        'simclr_r50_2x_sk1_1pct',
-                        'simclr_r152_3x_sk1_100pct',
-                        'simclr_r152_3x_sk1_10pct',
-                        'simclr_r152_3x_sk1_1pct']:
+    elif model_type.startswith('simclr'):
         model = load_simclr_v2(model_type)
     else:
         model = load_timm(model_type)
@@ -218,43 +210,48 @@ def run_activation_features(model_type, save_dir, video_dir, filter_config):
 if __name__ == "__main__":
     video_dir = '../data/AlgonautsVideos268_All_30fpsmax/'
     all_models = [
-                  'alexnet',
-                  'vgg',
-                  'resnet18', 'resnet34',
-                  'resnet50',
-                  'resnet101', 'resnet152',
-                  'efficientnet_b3', 'resnext50_32x4d',
-                  "vone-resnet50",
-                  "vone-resnet50_at",
-                  "vone-resnet50_ns",
-                  "vone-cornets",
-                  'simclr_r50_1x_sk0_100pct',# 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
-                  'simclr_r50_2x_sk1_100pct'# 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
-                  #'simclr_r152_3x_sk1_100pct', 'simclr_r152_3x_sk1_10pct', 'simclr_r152_3x_sk1_1pct'
+                  # 'alexnet',
+                  # 'vgg',
+                  # 'resnet18', 'resnet34',
+                  # 'resnet50',
+                  # 'resnet101', 'resnet152',
+                  # 'efficientnet_b3', 'resnext50_32x4d',
+                  # "vone-resnet50",
+                  # "vone-resnet50_at",
+                  # "vone-resnet50_ns",
+                  # "vone-cornets",
+                  # 'simclr_r50_1x_sk0_100pct',
+                  # 'simclr_r50_2x_sk1_100pct',
+                  'simclr_r101_1x_sk0_100pct',
+                  'simclr_r101_1x_sk1_100pct',
+                  'simclr_r101_2x_sk0_100pct',
+                  'simclr_r101_2x_sk1_100pct',
+                  'simclr_r152_2x_sk1_100pct',
+                  'simclr_r152_3x_sk1_100pct'
                   ]
-    all_models = ['resnet152']
     filter_configs = [
                      # {"filter_name": "raw",
                      # "sampling_rate": 4},
-                     # {"filter_name": "mean",
-                     #  "sampling_rate": 4}
-                     {"filter_name": "1d-pca",
-                      "sampling_rate": 4},
-                     {"filter_name": "bold-kernel-1",
-                      "sampling_rate": 4,
-                      "peak": 20,
-                      "under": 40,
-                      'under_coeff': 0.35},
-                     {"filter_name": "bold-kernel-2",
-                      "sampling_rate": 4,
-                      "peak": 60,
-                      "under": 80,
-                      'under_coeff': 0.5},
-                     {"filter_name": "bold-kernel-3",
-                      "sampling_rate": 4,
-                      "peak": 40,
-                      "under": 60,
-                      'under_coeff': 0.35}]
+                     {"filter_name": "mean",
+                      "sampling_rate": 4}
+                     # {"filter_name": "1d-pca",
+                     #  "sampling_rate": 4},
+                     # {"filter_name": "bold-kernel-1",
+                     #  "sampling_rate": 4,
+                     #  "peak": 20,
+                     #  "under": 40,
+                     #  'under_coeff': 0.35},
+                     # {"filter_name": "bold-kernel-2",
+                     #  "sampling_rate": 4,
+                     #  "peak": 60,
+                     #  "under": 80,
+                     #  'under_coeff': 0.5},
+                     # {"filter_name": "bold-kernel-3",
+                     #  "sampling_rate": 4,
+                     #  "peak": 40,
+                     #  "under": 60,
+                     #  'under_coeff': 0.35}
+                     ]
 
     # Loop over all models, create features from forward passes and reduce dims
     for filter_config in filter_configs:

@@ -9,4 +9,5 @@ jax
 jaxlib
 opencv-python
 umap-learn
-mle-toolbox
+tensorflow
+mle-toolbox==0.2.9

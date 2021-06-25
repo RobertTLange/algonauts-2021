@@ -1,28 +1,17 @@
-## Need to Run Before Group Meeting
-
-- [x] Get activations
-    - All architectures: Mean
-    - ResNet50: HRF Filters 1,2,3
-
-- [x] Get dim reduction
-    - All architectures: PCA
-    - ResNet50: UMAP, MDS, VAE
-
-- [x] Run compression: ResNet50 + PLS
-- [x] Run architectures: PCA-50
-- [x] Run encoders: Architecture-ResNet152
-- [ ] Run temporal filters (mean, 1d-pca, hrf-1, hrf-2, hrf-3)
-- [ ] Run VOneNetworks
-- [ ] Run SimCLR-v2
-
 ## Ideas to Try Out
 
-- Use more residual layers/finer resolution - relu/pooling
-- Cross-validate range of HRF filters
-- Rerun with ResNet152 encoding + orthogonal matching
+- Do contrastive learning directly on video frames?! Self-supervised finetuning
 - Try doing decoding from imagenet video labels
     - use to inform encoding models?!
-- Try combining predictions across datasets/encoding models
+- Use median activation instead of mean
+- Higher sampling rates - How do these compare?!
+- Cross-validate range of HRF filters
+- Barlow Twins architecture
+
+- Tuning Ideas
+    - Use more residual layers/finer resolution - relu/pooling
+    - Try ensembling predictions across datasets/encoding models
+    - Pick best model per subject per roi = Create one larger dataframe 'hyperhyperlog'
 
 ## Notes and Questions:
 
