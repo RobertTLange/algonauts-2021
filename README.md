@@ -11,10 +11,7 @@ pip install -r requirements.txt
 
 Generate activations from different neural network architectures (AlexNet, VGG, ResNets, VOneNetworks and SimCLR-v2):
 ```
-cd feature_extraction
-python generate_features.py
-cd ../feature_compression
-python run_compression.py
+python run_features.py
 ```
 
 Run on Bayesian Optimization tuning (50 iterations) for Subject 1 and ROI V1 with AlexNet PCA-100 features and ElasticNet encoding:

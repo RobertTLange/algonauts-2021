@@ -1,34 +1,34 @@
-# mle run configs/cluster/base_roi.yaml \
-#     --no_welcome \
-#     --purpose PLS PCA 50 SimCLR 1 ROI BO 25 \
-#     --base_train_config configs/train/roi/simclr/pls_pca_50_simclr_r50_1.json \
-#     --experiment_dir experiments/roi/simclr/pls_pca_50_simclr_r50_1_bo_25/
-# mle run configs/cluster/base_roi.yaml \
-#     --no_welcome \
-#     --purpose PLS PCA 100 SimCLR 1 ROI BO 25 \
-#     --base_train_config configs/train/roi/simclr/pls_pca_100_simclr_r50_1.json \
-#     --experiment_dir experiments/roi/simclr/pls_pca_100_simclr_r50_1_bo_25/
-# mle run configs/cluster/base_roi.yaml \
-#     --no_welcome \
-#     --purpose PLS PCA 250 SimCLR 1 ROI BO 25 \
-#     --base_train_config configs/train/roi/simclr/pls_pca_250_simclr_r50_1.json \
-#     --experiment_dir experiments/roi/simclr/pls_pca_250_simclr_r50_1_bo_25/
-# ####################################################################################
-# mle run configs/cluster/base_roi.yaml \
-#     --no_welcome \
-#     --purpose PLS PCA 50 SimCLR 2 ROI BO 25 \
-#     --base_train_config configs/train/roi/simclr/pls_pca_50_simclr_r50_2.json \
-#     --experiment_dir experiments/roi/simclr/pls_pca_50_simclr_r50_2_bo_25/
-# mle run configs/cluster/base_roi.yaml \
-#     --no_welcome \
-#     --purpose PLS PCA 100 SimCLR 2 ROI BO 25 \
-#     --base_train_config configs/train/roi/simclr/pls_pca_100_simclr_r50_2.json \
-#     --experiment_dir experiments/roi/simclr/pls_pca_100_simclr_r50_2_bo_25/
-# mle run configs/cluster/base_roi.yaml \
-#     --no_welcome \
-#     --purpose PLS PCA 250 SimCLR 2 ROI BO 25 \
-#     --base_train_config configs/train/roi/simclr/pls_pca_250_simclr_r50_2.json \
-#     --experiment_dir experiments/roi/simclr/pls_pca_250_simclr_r50_2_bo_25/
+mle run configs/cluster/base_roi.yaml \
+    --no_welcome \
+    --purpose PLS PCA 50 SimCLR 1 ROI BO 25 \
+    --base_train_config configs/train/roi/simclr/pls_pca_50_simclr_r50_1.json \
+    --experiment_dir experiments/roi/simclr/pls_pca_50_simclr_r50_1_bo_25/
+mle run configs/cluster/base_roi.yaml \
+    --no_welcome \
+    --purpose PLS PCA 100 SimCLR 1 ROI BO 25 \
+    --base_train_config configs/train/roi/simclr/pls_pca_100_simclr_r50_1.json \
+    --experiment_dir experiments/roi/simclr/pls_pca_100_simclr_r50_1_bo_25/
+mle run configs/cluster/base_roi.yaml \
+    --no_welcome \
+    --purpose PLS PCA 250 SimCLR 1 ROI BO 25 \
+    --base_train_config configs/train/roi/simclr/pls_pca_250_simclr_r50_1.json \
+    --experiment_dir experiments/roi/simclr/pls_pca_250_simclr_r50_1_bo_25/
+####################################################################################
+mle run configs/cluster/base_roi.yaml \
+    --no_welcome \
+    --purpose PLS PCA 50 SimCLR 2 ROI BO 25 \
+    --base_train_config configs/train/roi/simclr/pls_pca_50_simclr_r50_2.json \
+    --experiment_dir experiments/roi/simclr/pls_pca_50_simclr_r50_2_bo_25/
+mle run configs/cluster/base_roi.yaml \
+    --no_welcome \
+    --purpose PLS PCA 100 SimCLR 2 ROI BO 25 \
+    --base_train_config configs/train/roi/simclr/pls_pca_100_simclr_r50_2.json \
+    --experiment_dir experiments/roi/simclr/pls_pca_100_simclr_r50_2_bo_25/
+mle run configs/cluster/base_roi.yaml \
+    --no_welcome \
+    --purpose PLS PCA 250 SimCLR 2 ROI BO 25 \
+    --base_train_config configs/train/roi/simclr/pls_pca_250_simclr_r50_2.json \
+    --experiment_dir experiments/roi/simclr/pls_pca_250_simclr_r50_2_bo_25/
 mle run configs/cluster/base_roi.yaml \
     --no_welcome \
     --purpose PLS PCA 50 SimCLR R101 1x SK 0 ROI BO 25 \

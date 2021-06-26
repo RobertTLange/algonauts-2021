@@ -1,5 +1,5 @@
-from autoencoder import Autoencoder
-from train_autoencoder import fit_autoencoder
+from .autoencoder import Autoencoder
+from .train_autoencoder import fit_autoencoder
 import torch
 
 def fit_trafo_autoencoder(x_train, x_test, ae_params):

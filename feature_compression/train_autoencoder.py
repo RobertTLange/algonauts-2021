@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils import data
 
-from autoencoder import autoencoder_loss
+from .autoencoder import autoencoder_loss
 # Import utilities for Cluster distributed runs
 from mle_toolbox.utils import set_random_seeds
 

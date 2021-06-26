@@ -9,12 +9,12 @@ import torch
 from torch.autograd import Variable as V
 from torchvision import transforms as trn
 
-from alexnet import load_alexnet
-from vgg import load_vgg
-from resnet import load_resnet
-from timm_models import load_timm
-from vonenet import load_vonenet
-from simclr_v2 import load_simclr_v2
+from .alexnet import load_alexnet
+from .vgg import load_vgg
+from .resnet import load_resnet
+from .timm_models import load_timm
+from .vonenet import load_vonenet
+from .simclr_v2 import load_simclr_v2
 from sklearn.decomposition import PCA
 import scipy.stats as stats
 

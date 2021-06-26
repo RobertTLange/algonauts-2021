@@ -6,13 +6,17 @@
 - Use median activation instead of mean
 - Higher sampling rates - How do these compare?!
 - Cross-validate range of HRF filters
-- Barlow Twins architecture
+- SSL - Barlow Twins architecture/BYOL
+- Segmentation models YOLO or UNets
 
 - Tuning Ideas
     - Use more residual layers/finer resolution - relu/pooling
     - Try ensembling predictions across datasets/encoding models
     - Pick best model per subject per roi = Create one larger dataframe 'hyperhyperlog'
 
+- Things to check/engineer
+    - Have a look at BO logs. What PLS hyperparams are found?
+    - Pre-processing job to generate activations and run dim reduction
 ## Notes and Questions:
 
 - Need to upload result .pkl as .zip without subdirectories being zipped!

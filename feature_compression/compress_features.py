@@ -2,10 +2,10 @@ import os
 import glob
 from tqdm import tqdm
 import numpy as np
-from fit_pca import fit_trafo_pca
-from fit_umap import fit_trafo_umap
-from fit_autoencoder import fit_trafo_autoencoder
-from fit_mds import fit_trafo_mds
+from .fit_pca import fit_trafo_pca
+from .fit_umap import fit_trafo_umap
+from .fit_autoencoder import fit_trafo_autoencoder
+from .fit_mds import fit_trafo_mds
 
 from mle_toolbox.utils import save_pkl_object
 from sklearn.preprocessing import StandardScaler
@@ -65,21 +65,19 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
     print(all_layers_info)
 
 
-def run_compression(save_dir, trafo_type, info_title):
-    num_components = [50, 100] # 250] #, 500]
+def run_compression(save_dir, model_type, trafo_type, num_components):
     activations_dir = os.path.join(save_dir, "activations")
     # preprocessing using PCA and save
-    for num_comps in num_components:
-        info_title += f'_{num_comps}.pkl'
-        dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_comps}')
-        print(dim_red_dir)
-        print(f"------performing  {trafo_type}: {num_comps}---------")
-        dim_red_params = {"n_components": num_comps}
-        do_dim_reduction_and_save(activations_dir,
-                                  dim_red_dir,
-                                  trafo_type,
-                                  dim_red_params,
-                                  info_title)
+    info_title = f'{model_type}_{trafo_type}_{num_comps}.pkl'
+    dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_comps}')
+    print(dim_red_dir)
+    print(f"------performing  {trafo_type}: {num_comps}---------")
+    dim_red_params = {"n_components": num_comps}
+    do_dim_reduction_and_save(activations_dir,
+                              dim_red_dir,
+                              trafo_type,
+                              dim_red_params,
+                              info_title)
 
 
 if __name__ == "__main__":
@@ -113,10 +111,10 @@ if __name__ == "__main__":
                     # 'bold-kernel-2',
                     # 'bold-kernel-3'
                     ]
+    num_components = [50, 100]
     for filter_name in filter_names:
         for trafo_type in all_trafo_types:
             for model_type in all_models:
                 save_dir = f'../data/features/{model_type}/{filter_name}'
-                run_compression(save_dir,
-                                trafo_type=trafo_type,
-                                info_title=f'{model_type}_{trafo_type}')
+                for num_comps in num_components:
+                    run_compression(save_dir, model_type, trafo_type, num_comps)

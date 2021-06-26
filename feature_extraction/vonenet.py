@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision
-from vonenet_model import get_model
+from .vonenet_model import get_model
 
 model_archs = ['alexnet', 'resnet50', 'resnet50_at',
                'resnet50_ns', 'cornets']
