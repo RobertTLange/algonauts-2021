@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from mle_toolbox import MLExperiment
 from mle_toolbox.utils import print_framed
@@ -12,7 +13,14 @@ def main(mle: MLExperiment):
     activations_dir = ('./data/features/' +
                        mle.train_config.feature_model +
                        '/' + mle.train_config.filter_type +
+                       '/' + 'sr_' + mle.train_config.sampling_rate +
                        '/' + mle.train_config.dim_reduction)
+
+    act_files = [f for f in os.listdir(activations_dir) if
+                 os.path.isfile(os.path.join(activations_dir, f))]
+    max_layer_id = max([int(f[-5]) for f in onlyfiles if f.endswith('.npy')])
+    feature_layers_to_consider = [f"layer_{i}" for i in
+                                  range(1, max_layer_id+1)]
 
     # Get model params to optimize over, update tracked keys
     model_hyperparams = get_model_hyperparams(mle.net_config.encoding_model)
@@ -21,7 +29,7 @@ def main(mle: MLExperiment):
 
     # Loop over all layers to consider and run BO search for each one!
     layer_perf_tracker, best_layer, best_perf = {}, None, np.inf
-    for layer_id in mle.train_config.feature_layers_to_consider:
+    for layer_id in feature_layers_to_consider:
         print_framed(f"Start Layer {layer_id} - {mle.train_config.subject_id}"
                      + f" - {mle.train_config.roi_type}")
         # Load encoding data - Model features and fMRI targets - Layer/Subject
@@ -70,5 +78,5 @@ def main(mle: MLExperiment):
 
 
 if __name__ == "__main__":
-    mle = MLExperiment(config_fname="configs/train/base_config.json")
+    mle = MLExperiment()
     main(mle)

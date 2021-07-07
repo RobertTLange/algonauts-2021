@@ -124,6 +124,8 @@ def get_activations_and_save(model, video_list, activations_dir,
                 filtered_activations = stacked_activations
             elif filter_config["filter_name"] == "mean":
                 filtered_activations = np.mean(stacked_activations, axis=1)
+            elif filter_config["filter_name"] == "median":
+                filtered_activations = np.median(stacked_activations, axis=1)
             elif filter_config["filter_name"] == "1d-pca":
                 filtered_activations = temporal_activation_pca(stacked_activations)
             elif filter_config["filter_name"].startswith("bold-kernel"):
@@ -132,8 +134,6 @@ def get_activations_and_save(model, video_list, activations_dir,
                                                             filter_config["under"],
                                                             filter_config["under_coeff"])
             np.save(save_path, filtered_activations)
-        #     break
-        # break
     return len(activations)
 
 
@@ -221,19 +221,21 @@ if __name__ == "__main__":
                   # "vone-resnet50_ns",
                   # "vone-cornets",
                   # 'simclr_r50_1x_sk0_100pct',
-                  # 'simclr_r50_2x_sk1_100pct',
-                  'simclr_r101_1x_sk0_100pct',
-                  'simclr_r101_1x_sk1_100pct',
-                  'simclr_r101_2x_sk0_100pct',
-                  'simclr_r101_2x_sk1_100pct',
-                  'simclr_r152_2x_sk1_100pct',
-                  'simclr_r152_3x_sk1_100pct'
+                  'simclr_r50_2x_sk1_100pct',
+                  # 'simclr_r101_1x_sk0_100pct',
+                  # 'simclr_r101_1x_sk1_100pct',
+                  # 'simclr_r101_2x_sk0_100pct',
+                  # 'simclr_r101_2x_sk1_100pct',
+                  # 'simclr_r152_2x_sk1_100pct',
+                  # 'simclr_r152_3x_sk1_100pct'
                   ]
     filter_configs = [
                      # {"filter_name": "raw",
                      # "sampling_rate": 4},
                      {"filter_name": "mean",
-                      "sampling_rate": 4}
+                      "sampling_rate": 1},
+                     {"filter_name": "median",
+                      "sampling_rate": 1}
                      # {"filter_name": "1d-pca",
                      #  "sampling_rate": 4},
                      # {"filter_name": "bold-kernel-1",
@@ -256,7 +258,9 @@ if __name__ == "__main__":
     # Loop over all models, create features from forward passes and reduce dims
     for filter_config in filter_configs:
         for model_type in all_models:
-            save_dir = f'../data/features/{model_type}/{filter_config["filter_name"]}'
+            save_dir = (f'../data/features/{model_type}/' +
+                        f'{filter_config["filter_name"]}/' +
+                        f'sr_{filter_config["sampling_rate"]}/')
             print(save_dir)
             run_activation_features(model_type, save_dir,
                                     video_dir, filter_config)

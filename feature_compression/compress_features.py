@@ -68,11 +68,11 @@ def do_dim_reduction_and_save(activations_dir, save_dir,
 def run_compression(save_dir, model_type, trafo_type, num_components):
     activations_dir = os.path.join(save_dir, "activations")
     # preprocessing using PCA and save
-    info_title = f'{model_type}_{trafo_type}_{num_comps}.pkl'
-    dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_comps}')
+    info_title = f'{model_type}_{trafo_type}_{num_components}.pkl'
+    dim_red_dir = os.path.join(save_dir, f'{trafo_type}_{num_components}')
     print(dim_red_dir)
-    print(f"------performing  {trafo_type}: {num_comps}---------")
-    dim_red_params = {"n_components": num_comps}
+    print(f"------performing  {trafo_type}: {num_components}---------")
+    dim_red_params = {"n_components": num_components}
     do_dim_reduction_and_save(activations_dir,
                               dim_red_dir,
                               trafo_type,

@@ -5,7 +5,9 @@
     - use to inform encoding models?!
 - Use median activation instead of mean
 - Higher sampling rates - How do these compare?!
+    - Small effect on test performance - not on validation!
 - Cross-validate range of HRF filters
+
 - SSL - Barlow Twins architecture/BYOL
 - Segmentation models YOLO or UNets
 
@@ -16,7 +18,7 @@
 
 - Things to check/engineer
     - Have a look at BO logs. What PLS hyperparams are found?
-    - Pre-processing job to generate activations and run dim reduction
+
 ## Notes and Questions:
 
 - Need to upload result .pkl as .zip without subdirectories being zipped!

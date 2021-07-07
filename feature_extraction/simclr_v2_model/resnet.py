@@ -84,9 +84,11 @@ class Blocks(nn.Module):
             self.blocks.append(BottleneckBlock(self.channels_out, out_channels, 1, sk_ratio))
 
     def forward(self, x):
+        all_out = []
         for b in self.blocks:
             x = b(x)
-        return x
+            all_out.append(x)
+        return all_out
 
 
 class Stem(nn.Sequential):
@@ -126,17 +128,23 @@ class ResNet(nn.Module):
     def forward(self, x):
         all_features = []
         for l in self.net:
-            x = l(x)
-            all_features.append(x)
+            # Unravel the stem
+            if type(l) == Stem:
+                for sub_l in l:
+                    x = sub_l(x)
+                    all_features.append(x)
+            else:
+                x = l(x)
+                if type(x) == list:
+                    all_features.extend(x)
+                    x = x[-1]
+                else:
+                    all_features.append(x)
         h = x.mean(dim=[2, 3])
         all_features.append(h)
         h_out = self.fc(h)
         all_features.append(h_out)
         return all_features
-        # h = self.net(x).mean(dim=[2, 3])
-        # if apply_fc:
-        #     h = self.fc(h)
-        # return h
 
 
 class ContrastiveHead(nn.Module):
@@ -162,7 +170,8 @@ class ContrastiveHead(nn.Module):
         return x
 
 
-def get_simclr_resnet(depth=50, width_multiplier=1, sk_ratio=0):  # sk_ratio=0.0625 is recommended
+def get_simclr_resnet(depth=50, width_multiplier=1, sk_ratio=0):
+    # sk_ratio=0.0625 is recommended
     layers = {50: [3, 4, 6, 3],
               101: [3, 4, 23, 3],
               152: [3, 8, 36, 3],
