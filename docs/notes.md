@@ -1,11 +1,14 @@
+- Higher sampling rates - How do these compare?!
+    - Small effect on test performance - not on validation!
+- Use median activation instead of mean
+- Evaluate more layers of ResNet = all stem layers and all blocks
+    - ResNet50 = 25 layers (vs 7 before)
+
 ## Ideas to Try Out
 
 - Do contrastive learning directly on video frames?! Self-supervised finetuning
 - Try doing decoding from imagenet video labels
     - use to inform encoding models?!
-- Use median activation instead of mean
-- Higher sampling rates - How do these compare?!
-    - Small effect on test performance - not on validation!
 - Cross-validate range of HRF filters
 
 - SSL - Barlow Twins architecture/BYOL

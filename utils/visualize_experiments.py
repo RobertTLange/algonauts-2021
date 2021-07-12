@@ -31,13 +31,16 @@ def normalize_scores(heat_array):
     heat2 = (heat_array * norm_matrix).sum(axis=0)/norm_matrix.sum(axis=0)
     return heat2
 
-def get_norm_score(hyper_log, plot=False, min_heat=0.135, max_heat=0.36):
+def get_norm_score(hyper_log, plot=False, min_heat=None, max_heat=None):
     heat_array, range_x, range_y = visualize_2D_grid(hyper_log,
                                   params_to_plot=["roi_type", "subject_id"],
                                   target_to_plot="best_bo_score",
                                   return_array=True)
     heat2 = normalize_scores(heat_array)
-    print(heat2)
+    idx = []
+    for v in ["V1", "V2", "V3", "V4", "LOC", "EBA", "FFA", "STS", "PPA"]:
+        idx.append(np.where(range_x == v)[0][0])
+    print(heat2[idx])
     if plot:
         fig, ax = plot_2D_heatmap(range_x, ["mean"], np.expand_dims(heat2, 0),
                                   title="#Voxel per Subject Weighted Score",

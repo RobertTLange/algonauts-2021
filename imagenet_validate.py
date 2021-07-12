@@ -3,12 +3,13 @@ import torch.nn as nn
 import torchvision
 import os, tqdm, time
 
-from alexnet import load_alexnet
-from vgg import load_vgg
-from resnet import load_resnet
-from timm_models import load_timm
-from vonenet import load_vonenet
-from simclr_v2 import load_simclr_v2
+from feature_extraction.alexnet import load_alexnet
+from feature_extraction.vgg import load_vgg
+from feature_extraction.resnet import load_resnet
+from feature_extraction.timm_models import load_timm
+from feature_extraction.vonenet import load_vonenet
+from feature_extraction.simclr_v2 import load_simclr_v2
+from feature_extraction.barlow_twins import load_barlow_twins
 
 
 class ImageNetVal(object):
@@ -19,7 +20,7 @@ class ImageNetVal(object):
         self.device = device
         self.loss = nn.CrossEntropyLoss(size_average=False)
         self.loss = self.loss.to(self.device)
-        self.imagenet_val_path = "imagenet_val/"
+        self.imagenet_val_path = "~/imagenet/val"
         self.data_loader = self.data()
 
     def data(self):
@@ -79,7 +80,9 @@ class ImageNetVal(object):
                 target = target.to(self.device)
                 inp = inp.to(self.device)
                 output = self.model(inp)
-                if self.model_type in ['efficientnet_b3', 'resnext50_32x4d']:
+                print(len(output))
+                if self.model_type in ['efficientnet_b3', 'resnext50_32x4d',
+                                       'barlow-twins']:
                     record['loss'] += self.loss(output, target).item()
                     p1, p5 = accuracy(output, target, topk=(1, 5))
                 else:
@@ -107,13 +110,14 @@ def accuracy(output, target, topk=(1,)):
 
 if __name__ == "__main__":
     all_models = [
-                  'alexnet', 'vgg',
-                  'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-                  'efficientnet_b3', 'resnext50_32x4d',
-                  'vone-resnet50', 'vone-resnet50_at', 'vone-resnet50_ns', 'vone-cornets',
-                  'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
-                  'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct'
-                  #'simclr_r150_3x_sk1_100pct', 'simclr_r150_3x_sk1_10pct', 'simclr_r150_3x_sk1_1pct'
+                  # 'alexnet', 'vgg',
+                  # 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+                  # 'efficientnet_b3', 'resnext50_32x4d',
+                  # 'vone-resnet50', 'vone-resnet50_at', 'vone-resnet50_ns', 'vone-cornets',
+                  # 'simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
+                  # 'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct'
+                  #'simclr_r150_3x_sk1_100pct', 'simclr_r150_3x_sk1_10pct', 'simclr_r150_3x_sk1_1pct',
+                    'barlow-twins'
                   ]
     all_records = []
     for model_type in all_models:
@@ -133,10 +137,12 @@ if __name__ == "__main__":
                             "vone-cornets"]:
             model_name = model_type.split("-")[1]
             model = load_vonenet(model_name)
-        elif model_type in ['simclr_r50_1x_sk0_100pct', 'simclr_r50_1x_sk0_10pct', 'simclr_r50_1x_sk0_1pct',
-                            'simclr_r50_2x_sk1_100pct', 'simclr_r50_2x_sk1_10pct', 'simclr_r50_2x_sk1_1pct',
-                            'simclr_r150_3x_sk1_100pct', 'simclr_r150_3x_sk1_10pct', 'simclr_r150_3x_sk1_1pct']:
+        elif model_type in ['simclr_r50_1x_sk0_100pct',
+                            'simclr_r50_2x_sk1_100pct',
+                            'simclr_r150_3x_sk1_100pct']:
             model = load_simclr_v2(model_type)
+        elif model_type == "barlow-twins":
+            model = load_barlow_twins()
         else:
             model = load_timm(model_type, features_only=False)
 
@@ -148,6 +154,7 @@ if __name__ == "__main__":
         record = validator()
         all_records.append(record)
 
-    import pandas as pd
-    df = pd.DataFrame(all_records)
-    df.to_csv("imagenet_val_scores.csv")
+    if False:
+        import pandas as pd
+        df = pd.DataFrame(all_records)
+        df.to_csv("imagenet_val_scores.csv")
