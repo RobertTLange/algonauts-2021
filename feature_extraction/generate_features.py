@@ -15,6 +15,8 @@ from .resnet import load_resnet
 from .timm_models import load_timm
 from .vonenet import load_vonenet
 from .simclr_v2 import load_simclr_v2
+from .barlow_twins import load_barlow_twins
+
 from sklearn.decomposition import PCA
 import scipy.stats as stats
 
@@ -192,6 +194,8 @@ def run_activation_features(model_type, save_dir, video_dir, filter_config):
         model = load_vonenet(model_name)
     elif model_type.startswith('simclr'):
         model = load_simclr_v2(model_type)
+    elif model_type.startswith('barlow_twins'):
+        model = load_barlow_twins(model_type)
     else:
         model = load_timm(model_type)
     print(f'{model_type} Model loaded')
@@ -221,7 +225,7 @@ if __name__ == "__main__":
                   # "vone-resnet50_ns",
                   # "vone-cornets",
                   # 'simclr_r50_1x_sk0_100pct',
-                  'simclr_r50_2x_sk1_100pct',
+                  # 'simclr_r50_2x_sk1_100pct',
                   # 'simclr_r101_1x_sk0_100pct',
                   # 'simclr_r101_1x_sk1_100pct',
                   # 'simclr_r101_2x_sk0_100pct',

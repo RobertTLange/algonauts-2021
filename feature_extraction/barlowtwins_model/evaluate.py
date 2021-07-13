@@ -263,3 +263,6 @@ if __name__ == '__main__':
 
 # python evaluate.py ~/imagenet/ resnet50.pth --weights finetune --train-perc 1 --epochs 20 --lr-backbone 0.005 --lr-classifier 0.5 --weight-decay 0 --checkpoint-dir ./checkpoint/semisup1/
 #python evaluate.py ~/imagenet/ resnet50.pth --weights finetune --train-perc 10 --epochs 20 --lr-backbone 0.005 --lr-classifier 0.5 --weight-decay 0 --checkpoint-dir ./checkpoint/semisup10/
+
+
+#python evaluate.py ~/imagenet/ resnet50.pth --weights finetune --train-perc 10 --epochs 20 --lr-backbone 0.005 --lr-classifier 0.5 --weight-decay 0 --checkpoint-dir ./checkpoint/semisup10_ep50/ --epochs 50
