@@ -1,10 +1,10 @@
 # Meta Arguments: What job? What train .py file? Base config? Where to store?
 meta_job_args:
     project_name: "algo"
-    job_type: "hyperparameter-search"
-    base_train_fname: "run_roi.py"
-    base_train_config: "configs/train/roi/barlow_twins/pls_pca_50_barlow_1p_20ep.json"
-    experiment_dir: "experiments/roi/barlow_twins/pls_pca_50_barlow_1p_20ep/"
+    experiment_type: "hyperparameter-search"
+    base_train_fname: "run_bayes_opt.py"
+    base_train_config: "configs/train/roi/more_layers/pls_pca_75_simclr_r50_mean.json"
+    experiment_dir: "experiments/roi/more_layers/pls_pca_75_simclr_r50_mean/"
 
 # Parameters specific to the hyperparameter search
 param_search_args:
@@ -56,7 +56,7 @@ single_job_args:
     log_file: "log"
     err_file: "err"
     env_name: "algonauts"
-    time_per_job: "05:00:00"
+    time_per_job: "01:00:00"
     exclude_nodes:
         - "cognition13"
 
@@ -67,9 +67,9 @@ pre_processing_args:
         num_logical_cores: 10
         num_gpus: 1
         env_name: "algonauts"
-        time_per_job: "00:05:00"
+        time_per_job: "01:00:00"
     extra_cmd_line_input:
-        model_type: "barlow_twins_10p_20ep"
+        model_type: "simclr_r50_2x_sk1_100pct"
         sampling_rate: 2
         trafo_type: "pca"
-        num_components: 50
+        num_components: 75

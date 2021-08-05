@@ -1,10 +1,10 @@
 # Meta Arguments: What job? What train .py file? Base config? Where to store?
 meta_job_args:
     project_name: "algo"
-    job_type: "hyperparameter-search"
-    base_train_fname: "run_roi.py"
-    base_train_config: "configs/train/roi/barlow_twins/pls_pca_50_barlow_10p_20ep.json"
-    experiment_dir: "experiments/roi/barlow_twins/pls_pca_50_barlow_10p_20ep/"
+    experiment_type: "hyperparameter-search"
+    base_train_fname: "run_autosklearn.py"
+    base_train_config: "configs/train/roi/auto_resnet50.json"
+    experiment_dir: "experiments/roi/auto_resnet50/"
 
 # Parameters specific to the hyperparameter search
 param_search_args:
@@ -14,12 +14,13 @@ param_search_args:
         max_objective: True
         problem_type: "best"
         eval_metrics:
-            - "best_bo_score"
+            - "r2_score"
+            - "corr_mean"
             - "mse_mean"
             - "mae_mean"
     search_resources:
-        num_search_batches: 1
-        num_evals_per_batch: 90
+        num_search_batches: 2
+        num_evals_per_batch: 45
         num_seeds_per_eval: 1
     search_config:
         search_type: "grid"
@@ -52,24 +53,12 @@ param_search_args:
 single_job_args:
     job_name: "algo"
     num_gpus: 0
-    num_logical_cores: 2
+    num_logical_cores: 5
     log_file: "log"
     err_file: "err"
     env_name: "algonauts"
     time_per_job: "05:00:00"
-    exclude_nodes:
+    exlcude_nodes:
         - "cognition13"
-
-# Parameters for the pre-processing job
-pre_processing_args:
-    processing_fname: "run_features.py"
-    processing_job_args:
-        num_logical_cores: 10
-        num_gpus: 1
-        env_name: "algonauts"
-        time_per_job: "00:05:00"
-    extra_cmd_line_input:
-        model_type: "barlow_twins_10p_20ep"
-        sampling_rate: 2
-        trafo_type: "pca"
-        num_components: 50
+        - "cognition15"
+        - "cognition16"

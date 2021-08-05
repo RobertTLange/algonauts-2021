@@ -3,7 +3,7 @@ from sklearn.cross_decomposition import PLSRegression
 # Partial LS Hyperparameters
 pls_params_to_search = {
 "integer":
-    {"n_components": {"begin": 1, "end": 50, "prior": 'uniform'}},
+    {"n_components": {"begin": 1, "end": 100, "prior": 'uniform'}},
 }
 
 
