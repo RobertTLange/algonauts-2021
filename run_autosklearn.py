@@ -6,7 +6,7 @@ from utils.helper import get_encoding_data
 from utils.evaluate import evaluation_metrics
 from sklearn.metrics import r2_score
 from autosklearn.regression import AutoSklearnRegressor
-# Check docs/AutoML params here: https://automl.github.io/auto-sklearn/master/api.html#regression
+# Check params https://automl.github.io/auto-sklearn/master/api.html#regression
 
 
 def main(mle: MLExperiment):
@@ -22,8 +22,14 @@ def main(mle: MLExperiment):
                  os.path.isfile(os.path.join(activations_dir, f))]
     max_layer_id = max([int(f.split("_")[-1].split('.')[0])
                         for f in act_files if f.endswith('.npy')])
-    feature_layers_to_consider = [f"layer_{i}" for i in
-                                  range(1, max_layer_id+1)]
+
+    # Differentiate between using individual layers as features or all together
+    if mle.train_config.merge_layer_features:
+        feature_layers_to_consider = [[f"layer_{i}" for i in
+                                      range(1, max_layer_id+1)]]
+    else:
+        feature_layers_to_consider = [f"layer_{i}" for i in
+                                      range(1, max_layer_id+1)]
 
     # Get model params to optimize over, update tracked keys
     mle.log.extend_tracking(["layer_id"])

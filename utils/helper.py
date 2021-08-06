@@ -43,7 +43,18 @@ def get_encoding_data(fmri_dir='./data/participants_data_v2021',
                       layer_id='layer_1', subject_id='sub01', roi_type='V1'):
     if roi_type == "WB": track = "full_track"
     else: track = "mini_track"
-    X, X_test = get_activations(activations_dir, layer_id)
+
+    # Loop over layers and stack features together
+    if type(layer_id) == list:
+        all_X = []
+        all_X_test = []
+        for l_id in layer_id:
+            X_t, X_t_test = get_activations(activations_dir, l_id)
+            all_X.append(X_t)
+            all_X_test.append(X_t_test)
+        X, X_test = np.concatenate(all_X, axis=1), np.concatenate(all_X_test, axis=1)
+    else:
+        X, X_test = get_activations(activations_dir, layer_id)
     y = get_fmri(fmri_dir, subject_id, roi_type)
     return X, y, X_test
 

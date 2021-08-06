@@ -8,11 +8,11 @@
                   "sampling_rate": 2,
                   "merge_layer_features": false,
                   # Hyperparameter-specific data (Auto-Sklearn - per layer)
-                  "autosklearn_config": {"time_left_for_this_task": 2400,
-                                         "per_run_time_limit": 600,
+                  "autosklearn_config": {"time_left_for_this_task": 4500,
+                                         "per_run_time_limit": 1200,
                                          "ensemble_size": 10,
                                          "ensemble_nbest": 10,
-                                         "memory_limit": 10000}
+                                         "memory_limit": 20000}
                               },
  "log_config": {"time_to_track": ["layer"],
                 "what_to_track": ["mse_mean",
