@@ -19,8 +19,8 @@ param_search_args:
             - "mse_mean"
             - "mae_mean"
     search_resources:
-        num_search_batches: 1
-        num_evals_per_batch: 10
+        num_search_batches: 2
+        num_evals_per_batch: 5
         num_seeds_per_eval: 1
     search_config:
         search_type: "grid"
@@ -45,8 +45,12 @@ param_search_args:
 single_job_args:
     job_name: "algo"
     num_gpus: 0
-    num_logical_cores: 5
+    num_logical_cores: 20
     log_file: "log"
     err_file: "err"
     env_name: "algonauts"
     time_per_job: "05:00:00"
+    exclude_nodes:
+        - "cognition13"
+        - "cognition15"
+        - "cognition16"

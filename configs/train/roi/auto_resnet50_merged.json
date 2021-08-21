@@ -6,13 +6,13 @@
                   "filter_type": "mean",
                   "dim_reduction": "pca_75",
                   "sampling_rate": 2,
-                  "merge_layer_features": false,
+                  "merge_layer_features": true,
                   # Hyperparameter-specific data (Auto-Sklearn - per layer)
-                  "autosklearn_config": {"time_left_for_this_task": 1000,
-                                         "per_run_time_limit": 100,
+                  "autosklearn_config": {"time_left_for_this_task": 12000,
+                                         "per_run_time_limit": 1000,
                                          "ensemble_size": 10,
                                          "ensemble_nbest": 10,
-                                         "memory_limit": 5000}
+                                         "memory_limit": 10000}
                               },
  "log_config": {"time_to_track": ["layer"],
                 "what_to_track": ["mse_mean",

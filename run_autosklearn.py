@@ -47,7 +47,12 @@ def main(mle: MLExperiment):
                                          roi_type=mle.train_config.roi_type)
         # print(os.path.join(mle.log_dir, "autosklearn"))
         # Instatiate Auto Sklearn and Run
-        dataname = f'{mle.train_config.subject_id}_{mle.train_config.roi_type}_{layer_id}'
+        if type(layer_id) == list:
+            layer_name = "joined"
+            dataname = f'{mle.train_config.subject_id}_{mle.train_config.roi_type}_joined'
+        else:
+            layer_name = layer_id
+            dataname = f'{mle.train_config.subject_id}_{mle.train_config.roi_type}_{layer_id}'
         automl = AutoSklearnRegressor(
                         **mle.train_config.autosklearn_config,
                         tmp_folder=os.path.join(mle.log_dir, "autosklearn", dataname),
@@ -59,17 +64,17 @@ def main(mle: MLExperiment):
         r2_stats = r2_score(y, y_train_pred)
 
         time_tick = {"layer": i+1}
-        stats_tick = {"layer_id": layer_id,
+        stats_tick = {"layer_id": layer_name,
                       "mse_mean": mse,
                       "mae_mean": mae,
                       "corr_mean": corr,
                       "r2_score": r2_stats}
-        model = {"ensemble": automl.show_models()}
+        #model = {"ensemble": automl.show_models()}
         extra = automl.cv_results_['params'][np.argmax(automl.cv_results_['mean_test_score'])]
-        mle.update_log(time_tick, stats_tick, model, extra_obj=extra, save=True)
+        mle.update_log(time_tick, stats_tick, extra_obj=extra, save=True)
 
         # After done with BO for layer features - save current best predictions
-        print_framed(f"Save model predictions {layer_id}"
+        print_framed(f"Save model predictions {layer_name}"
                      + f" - {mle.train_config.subject_id}"
                      + f" - {mle.train_config.roi_type}")
 
@@ -77,7 +82,7 @@ def main(mle: MLExperiment):
         # Store best models predictions and model itself
         pred_fname = (mle.train_config.subject_id + "_" +
                       mle.train_config.roi_type + "_" +
-                      str(layer_id) + "_test.npy")
+                      str(layer_name) + "_test.npy")
         mle.log.save_extra(y_pred, pred_fname)
 
 

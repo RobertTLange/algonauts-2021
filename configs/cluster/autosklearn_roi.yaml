@@ -58,7 +58,7 @@ single_job_args:
     err_file: "err"
     env_name: "algonauts"
     time_per_job: "05:00:00"
-    exlcude_nodes:
+    exclude_nodes:
         - "cognition13"
         - "cognition15"
         - "cognition16"

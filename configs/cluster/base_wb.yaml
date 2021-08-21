@@ -3,8 +3,8 @@ meta_job_args:
     project_name: "algo"
     experiment_type: "hyperparameter-search"
     base_train_fname: "run_bayes_opt.py"
-    base_train_config: "configs/train/wb/pls_resnet50.json"
-    experiment_dir: "experiments/wb/pls_resnet50_bo_15/"
+    base_train_config: "configs/train/wb/pls_pca_75_simclr_r50_mean.json"
+    experiment_dir: "experiments/wb/pls_pca_75_simclr_r50_bo_20/"
 
 # Parameters specific to the hyperparameter search
 param_search_args:

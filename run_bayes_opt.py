@@ -76,7 +76,7 @@ def main(mle: MLExperiment):
     pred_fname = (mle.train_config.subject_id + "_" +
                   mle.train_config.roi_type + "_" +
                   best_layer + "_test.npy")
-    mle.log.save_to_extra_dir(y_pred, pred_fname)
+    mle.log.save_extra(y_pred, pred_fname)
 
 
 if __name__ == "__main__":

@@ -3,8 +3,8 @@ meta_job_args:
     project_name: "algo"
     experiment_type: "hyperparameter-search"
     base_train_fname: "run_bayes_opt.py"
-    base_train_config: "configs/train/roi/pls_resnet50.json"
-    experiment_dir: "experiments/roi/pls_resnet50_bo_25/"
+    base_train_config: "configs/train/roi/more_layers/pls_pca_50_simclr_r50_mean.json"
+    experiment_dir: "experiments/roi/pls_simclr_v2_bo_25/"
 
 # Parameters specific to the hyperparameter search
 param_search_args:
@@ -18,8 +18,8 @@ param_search_args:
             - "mse_mean"
             - "mae_mean"
     search_resources:
-        num_search_batches: 1
-        num_evals_per_batch: 90
+        num_search_batches: 2
+        num_evals_per_batch: 45
         num_seeds_per_eval: 1
     search_config:
         search_type: "grid"

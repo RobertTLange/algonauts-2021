@@ -10,7 +10,8 @@ def generate_and_compress(model_type: str, filter_config: dict,
                 f'{filter_config["filter_name"]}/' +
                 f'sr_{filter_config["sampling_rate"]}/')
     run_activation_features(model_type, save_dir, video_dir, filter_config)
-    run_compression(save_dir, model_type, trafo_type, num_components)
+    for num_comps in [50, 60, 70, 80, 90, 100]:
+        run_compression(save_dir, model_type, trafo_type, num_comps)
     return
 
 
@@ -22,7 +23,7 @@ if __name__ == "__main__":
                         default='simclr_r50_2x_sk1_100pct',
                         help='Model to generate activations.')
     parser.add_argument('-sampling_rate', '--sampling_rate',
-                        default=1, type=int, help='Video Sampling Rate.')
+                        default=2, type=int, help='Video Sampling Rate.')
     parser.add_argument('-trafo_type', '--trafo_type',
                         default='pca', help='Compression Technique.')
     parser.add_argument('-filter_name', '--filter_name',
