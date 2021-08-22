@@ -3,7 +3,9 @@
 
 This repository contains a solution approach to the [Algonauts Challenge 2021](http://algonauts.csail.mit.edu/), in which one had to predict fMRI-recorded voxel activity across different ROIs/subjects and for different small video snippet stimuli.
 
-The final submitted solution is based on a SimCLR-v2 contrastive pre-trained ResNet-50, which was fine-tuned on supervised labels of ImageNet. The layer-wise features extracted from the videos were PCA-dimensionality reduced down to 50 features. Afterwards, we run a Bayesian Optimization (BO) Loop to tune the hyperparameters of a PLS regression encoding model. The BO procedure is layer-, subject- and ROI-specific and uses 10-fold cross-validation. Afterwards, we select the best performing encoding model and retrain on all video-voxel datapoints. The full pipeline is depicted below:
+**You can read my challenge report with details on exploration and final submission [here](docs/report.pdf).**
+
+**Short solution description**: The final submission is based on a SimCLR-v2 contrastive pre-trained ResNet-50, which was fine-tuned on supervised labels of ImageNet. The layer-wise features extracted from the videos were PCA-dimensionality reduced down to 50 features. Afterwards, we run a Bayesian Optimization (BO) Loop to tune the hyperparameters of a PLS regression encoding model. The BO procedure is layer-, subject- and ROI-specific and uses 10-fold cross-validation. Afterwards, we select the best performing encoding model and retrain on all video-voxel datapoints. The full pipeline is depicted below:
 
 ![](docs/pipeline.png)
 
@@ -14,12 +16,20 @@ Install all required dependencies (in a clean conda environment):
 ./setup.sh
 ```
 
-Generate activations from different neural network architectures (AlexNet, VGG, ResNets, VOneNetworks or SimCLR-v2):
+Generate activations from different neural network architectures (e.g., AlexNet, VGG, ResNets, VOneNetworks or SimCLR-v2):
 ```
 python run_features.py
 ```
 
-Run on Bayesian Optimization tuning (50 iterations) for Subject 1 and ROI V1 with AlexNet PCA-100 features and ElasticNet encoding:
+Note that in order to load the network checkpoint you will previously have to download and convert the pre-trained model checkpoints:
+
+```
+cd feature_extraction/simclr_v2_model
+python download.py
+python convert.py
+```
+
+Afterwards, you can run a Bayesian Optimization loop to tune (50 iterations) for Subject 1 and ROI V1 with SimCLR-v2 activations, PCA-50 features and PLS regression encoding by executing:
 ```
 python run_bayes_opt.py -config_fname configs/train/base_config.json
 ```

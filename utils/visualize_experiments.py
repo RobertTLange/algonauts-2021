@@ -85,8 +85,9 @@ def plot_bo_scores(meta_log, hyper_log, subject_id, roi_type,
                    num_bo_per_layer=50, num_layers=8):
     fig, ax = plt.subplots(figsize=(14,5))
     eval_id = hyper_log.hyper_log[hyper_log.hyper_log.subject_id == subject_id][hyper_log.hyper_log.roi_type == roi_type].run_id.iloc[0]
-    ax.plot(np.arange(len(meta_log[eval_id].stats.best_bo_score.mean)),
-            meta_log[eval_id].stats.best_bo_score.mean)
+    eval_id += "_seed_0"
+    ax.plot(np.arange(len(meta_log[eval_id].stats.best_bo_score)),
+            meta_log[eval_id].stats.best_bo_score)
     for i in range(num_layers-1):
         ax.axvline(num_bo_per_layer + i*num_bo_per_layer,
                     ls="--", c="red", alpha=0.5)
@@ -101,7 +102,7 @@ def plot_bo_scores(meta_log, hyper_log, subject_id, roi_type,
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.set_xlabel("# Fitting Iteration")
-    ax.set_ylabel("Correlation")
+    ax.set_ylabel("CV-Correlation")
     #ax.set_ylim(0.1, 0.35)
     ax.set_title(f"Layerwise Bayesian Optimization: {subject_id} - {roi_type}")
     return
@@ -114,10 +115,10 @@ def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):
-        run_id = hyper_log.hyper_log.iloc[e_t].run_id
+        run_id = hyper_log.hyper_log.iloc[e_t].run_id + "_seed_0"
         subject_id = hyper_log.hyper_log.iloc[e_t].subject_id
         roi_type = hyper_log.hyper_log.iloc[e_t].roi_type
-        results = meta_log[run_id].stats.best_bo_score.mean
+        results = meta_log[run_id].stats.best_bo_score
         for i in range(num_layers):
             sub_layer_results = results[i*num_bo_per_layer: num_bo_per_layer + i*num_bo_per_layer]
             best_score_on_layer = np.max(sub_layer_results)
@@ -129,6 +130,7 @@ def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
     layer_df = pd.DataFrame(df)
     #fig, axs = plt.subplots(2, 4, figsize=(50, 25))
     all_heats = []
+
     for i, l_id in enumerate(["layer_" + str(i+1) for i in range(num_layers)]):
         heat_array, range_x, range_y = visualize_2D_grid(layer_df,
                                       params_to_plot=["roi_type", "subject_id"],
@@ -137,11 +139,12 @@ def plot_perf_per_layer(hyper_log, meta_log, num_layers=8,
                                       return_array=True)
         heat2 = normalize_scores(heat_array)
         all_heats.append(heat2)
-    fig, ax = plot_2D_heatmap(range_x, ["L" + str(i+1) for i in range(num_layers)],
+    fig, ax = plot_2D_heatmap(range_x, ["L" + str(i+1) for i in range(num_layers)][::-1],
                               np.stack(all_heats, 0),
                               title=title,
                               xy_labels=["Region of Interest", "Layer"],
-                              max_heat=max_heat, min_heat=min_heat)
+                              max_heat=max_heat, min_heat=min_heat,
+                              figsize=(18, 12))
     return
 
 
@@ -152,10 +155,10 @@ def plot_best_layer(hyper_log, meta_log, num_layers=5,
     df = {"subject_id": [], "roi_type": [],
           "layer_id": [], "best_bo_score": []}
     for e_t in range(len(hyper_log)):
-        run_id = hyper_log.hyper_log.iloc[e_t].run_id
+        run_id = hyper_log.hyper_log.iloc[e_t].run_id + "_seed_0"
         subject_id = hyper_log.hyper_log.iloc[e_t].subject_id
         roi_type = hyper_log.hyper_log.iloc[e_t].roi_type
-        results = meta_log[run_id].stats.best_bo_score.mean
+        results = meta_log[run_id].stats.best_bo_score
         for i in range(num_layers):
             sub_layer_results = results[i*num_bo_per_layer: num_bo_per_layer + i*num_bo_per_layer]
             best_score_on_layer = np.max(sub_layer_results)
@@ -168,14 +171,14 @@ def plot_best_layer(hyper_log, meta_log, num_layers=5,
     max_layer_idx = layer_df.groupby(['subject_id',
                                       'roi_type'])['best_bo_score'].transform(max) == df['best_bo_score']
     max_layer_df = layer_df[max_layer_idx]
-    max_layer_df['best_layer_id'] = [int(l[-1]) for l in max_layer_df.layer_id]
-
+    max_layer_df['best_layer_id'] = [int(l.split("_")[1]) for l in max_layer_df.layer_id]
     visualize_2D_grid(max_layer_df,
                       params_to_plot=["roi_type", "subject_id"],
                       target_to_plot="best_layer_id",
                       plot_title=title,
                       xy_labels=["Region of Interest", "Subject ID"],
-                      variable_name="Layer ID")
+                      variable_name="Layer ID",
+                      cmap="Reds")
     return
 
 
